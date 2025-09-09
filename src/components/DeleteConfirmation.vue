@@ -1,47 +1,44 @@
-<!-- src/components/DeleteConfirmation.vue (updated) -->
+<!-- src/components/DeleteConfirmation.vue -->
 <template>
-  <div
-    class="fixed inset-0 z-50 overflow-y-auto"
-    aria-labelledby="delete-modal-title"
-    role="dialog"
-    aria-modal="true"
-  >
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-          <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-              <i class="pi pi-exclamation-triangle text-red-600"></i>
-            </div>
-            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-              <h3 class="text-lg leading-6 font-medium text-gray-900" id="delete-modal-title">
-                Delete {{ itemType || 'Item' }}
-              </h3>
-              <div class="mt-2">
-                <p class="text-sm text-gray-500">
-                  Are you sure you want to delete "{{ item?.name || (item?.first_name + ' ' + item?.last_name) }}"? This action cannot be undone.
-                </p>
-              </div>
-            </div>
-          </div>
+  <div v-if="show" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <!-- Modal Header -->
+      <div class="mt-3 text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+          <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
         </div>
-        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <h3 class="text-lg font-medium text-gray-900 mt-2">Delete {{item_type}} Member</h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500">
+            Are you sure you want to delete 
+            <span class="font-semibold text-gray-700">
+              {{ staff?.first_name }} {{ item?.last_name }}
+            </span>?
+          </p>
+          <p class="text-sm text-gray-500 mt-1">
+            This action cannot be undone and will permanently remove all associated data.
+          </p>
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="items-center px-4 py-3">
+        <div class="flex flex-col sm:flex-row-reverse gap-2">
           <button
             @click="$emit('confirm')"
             :disabled="loading"
-            type="button"
-            class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200"
+            class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <div v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            {{ loading ? 'Deleting...' : 'Delete' }}
+            <div v-if="loading" class="flex items-center justify-center">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Deleting...
+            </div>
+            <span v-else>Delete {{item_type}}</span>
           </button>
           <button
             @click="$emit('cancel')"
             :disabled="loading"
-            type="button"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200"
+            class="px-4 py-2 bg-white text-gray-500 text-base font-medium rounded-md w-full shadow-sm border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
           >
             Cancel
           </button>
@@ -52,15 +49,24 @@
 </template>
 
 <script setup>
-defineProps({
-  show: Boolean,
-  item: Object,
-  loading: Boolean,
-  itemType: {
-    type: String,
-    default: 'item'
-  }
-});
-
 defineEmits(['confirm', 'cancel']);
+
+defineProps({
+  show: {
+    type: Boolean,
+    default: false
+  },
+  item: {
+    type: Object,
+    default: null
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  item_type: {
+    type: String,
+    default: 'staff member'
+  } 
+});
 </script>

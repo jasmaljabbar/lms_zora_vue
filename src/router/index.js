@@ -1,21 +1,31 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginPage from '@/components/LoginPage.vue';
-import AdminDashboard from '@/components/AdminDashboard.vue';
-import DashboardHome from '@/components/DashboardHome.vue';
-import AddPrincipal from '@/components/AddPrincipal.vue';
-import Schools from '@/components/Schools.vue';
-import Principals from '@/components/Principals.vue';
-import Staffs from '@/components/Staffs.vue';
-import Teachers from '@/components/Teachers.vue';
-import Students from '@/components/Students.vue';
+import AdminDashboard from '@/components/Admin/AdminDashboard.vue';
+import AdminDashboardHome from '@/components/Admin/DashboardHome.vue';
+import AddPrincipal from '@/components/Admin/AddPrincipal.vue';
+import Schools from '@/components/Admin/Schools.vue';
+import Principals from '@/components/Admin/Principals.vue';
+import Staffs from '@/components/Admin/Staffs.vue';
+import Teachers from '@/components/Admin/Teachers.vue';
+import Students from '@/components/Admin/Students.vue';
+import PrincipalDashboard from '@/components/PrincipalDashboard.vue';
+import PrincipalDashboardHome from '@/components/DashboardHome.vue';
+import principalStaff from '@/components/Staffs.vue'
+import AddStaff from '@/components/AddStaff.vue';
+import { RoleUtils } from '@/utils/roleUtils.js';
+import { toast } from 'vue3-toastify'
+import principalTeachers from '@/components/Teachers.vue';
+import AddTeacher from '@/components/AddTeacher.vue';
+import principalStudents from '@/components/Students.vue';
+import AddStudent from '@/components/AddStudent.vue';
 
 const routes = [
   {
     path: '/',
     name: 'Login',
     component: LoginPage,
-    meta: { requiresGuest: true } // Add this meta field
+    meta: { requiresGuest: true }
   },
   {
     path: '/admin',
@@ -25,7 +35,7 @@ const routes = [
       {
         path: 'dashboard',
         name: 'AdminDashboardHome',
-        component: DashboardHome,
+        component: AdminDashboardHome,
       },
       {
         path: 'principals/add',
@@ -44,27 +54,96 @@ const routes = [
       },
       {
         path: 'staff',
-        name: 'Adminstaffs',
+        name: 'AdminStaffs',
         component: Staffs,
       },
       {
         path: 'teachers',
-        name: 'Adminteachers',
+        name: 'AdminTeachers',
         component: Teachers,
       },
       {
         path: 'students',
-        name: 'Adminstudents',
+        name: 'AdminStudents',
         component: Students,
       },
-      { 
-        path: '', 
+      {
+        path: '',
         name: 'AdminRedirect',
-        redirect: '/admin/dashboard' 
-      },
-
+        redirect: '/admin/dashboard'
+      }
     ]
   },
+  {
+  path: '/principal',
+  component: PrincipalDashboard,
+  meta: { requiresAuth: true, requiresPrincipal: true },
+  children: [
+    {
+      path: 'dashboard',
+      name: 'PrincipalDashboardHome',
+      component: PrincipalDashboardHome,
+    },
+    {
+      path: 'staff',
+      name: 'PrincipalStaff',
+      component: principalStaff,
+    },
+    {
+      path: 'add',
+      name: 'AddPrincipalStaff',
+      component: AddStaff,
+    },
+    {
+      path: 'teachers',
+      name: 'PrincipalTeachers',
+      component: principalTeachers,
+    },
+    {
+      path: 'teachers/add',
+      name: 'AddPrincipalTeacher',
+      component: AddTeacher,
+    },
+    {
+      path: 'students',
+      name: 'PrincipalStudents',
+      component: principalStudents,
+    },
+    {
+      path: 'students/add',
+      name: 'AddPrincipalStudent',
+      component: AddStudent,
+    },
+    {
+      path: '',
+      name: 'PrincipalRedirect',
+      redirect: '/principal/dashboard'
+    }
+  ]
+},
+
+  // Catch all route - redirect to appropriate dashboard or login
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: to => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return '/';
+      
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.roles && user.roles.includes('admin')) {
+          return '/admin/dashboard';
+        }
+        if (user && user.roles && user.roles.includes('principal')) {
+          return '/principal/dashboard';
+        }
+      } catch (e) {
+        console.error("Failed to parse user data", e);
+      }
+      
+      return '/';
+    }
+  }
 ];
 
 const router = createRouter({
@@ -72,11 +151,11 @@ const router = createRouter({
   routes,
 });
 
-// Navigation Guard
+// Enhanced Navigation Guard
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
   const requiresGuest = to.matched.some(record => record.meta.requiresGuest);
+  
   const token = localStorage.getItem('access_token');
   let user = null;
 
@@ -93,13 +172,7 @@ router.beforeEach((to, from, next) => {
 
   // Redirect authenticated users away from login page
   if (requiresGuest && token) {
-    // Check if user is admin and redirect to admin dashboard
-    if (user && user.roles && user.roles.includes('admin')) {
-      return next('/admin/dashboard');
-    }
-    // For other user types, you can add additional redirects here
-    // For now, redirect to admin dashboard as fallback
-    return next('/admin/dashboard');
+    return next(RoleUtils.getDashboardRoute(user));
   }
 
   // Check for authentication
@@ -107,14 +180,30 @@ router.beforeEach((to, from, next) => {
     return next('/');
   }
 
-  // Check for admin role
-  if (requiresAdmin && (!user || !user.roles || !user.roles.includes('admin'))) {
-    alert('Unauthorized: You must be an admin to access this page.');
-    return next('/');
+  // Check for specific role requirements
+  if (requiresAuth && token && user) {
+    // Check if user can access this route based on their role
+    if (!RoleUtils.canAccessRoute(user, to.meta)) {
+      toast.error('Access Denied: You do not have permission to view this page.')
+      return next(RoleUtils.getDashboardRoute(user));
+    }
   }
 
   // Allow navigation
   next();
 });
+
+// Helper function to redirect users to their appropriate dashboard
+function redirectToAppropriateDashboard(user) {
+  if (user && user.roles) {
+    if (user.roles.includes('admin')) {
+      return '/admin/dashboard';
+    }
+    if (user.roles.includes('principal')) {
+      return '/principal/dashboard';
+    }
+  }
+  return '/';
+}
 
 export default router;

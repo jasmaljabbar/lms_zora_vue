@@ -7,12 +7,12 @@
         <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Schools Management</h2>
         <p class="text-sm text-gray-600 mt-1">Manage all schools in your system</p>
       </div>
-      <button 
-        @click="navigateToAddSchool" 
+     <button 
+        @click="navigateToAddPrincipal" 
         class="w-full sm:w-auto px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
       >
         <i class="pi pi-plus mr-2"></i>
-        Add School
+        Add Principal
       </button>
     </div>
 
@@ -129,7 +129,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api/axios';
+import api from '../../api/axios';
 
 // Import components
 import SearchAndFilters from './SearchAndFilters.vue';
@@ -185,10 +185,9 @@ const fetchSchools = async () => {
   }
 };
 
-const navigateToAddSchool = () => {
-  router.push('/admin/schools/add');
+const navigateToAddPrincipal = () => {
+  router.push('/admin/principals/add'); // Navigate to the add principal page
 };
-
 const clearSearch = () => {
   searchQuery.value = '';
 };

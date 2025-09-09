@@ -79,7 +79,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api/axios'; // Import your configured axios instance
+import api from '../../api/axios'; // Import your configured axios instance
 
 const router = useRouter();
 

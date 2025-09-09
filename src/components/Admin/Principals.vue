@@ -142,7 +142,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api/axios';
+import api from '../../api/axios';
 
 // Import components
 import PrincipalForm from './PrincipalForm.vue';

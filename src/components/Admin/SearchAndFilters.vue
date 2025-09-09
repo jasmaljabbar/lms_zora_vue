@@ -11,7 +11,7 @@
           :value="searchQuery"
           @input="$emit('update:searchQuery', $event.target.value)"
           type="text"
-          placeholder="Search principals by name or email..."
+          :placeholder="`Search ${searchItem} by name or email...`"
           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
         />
         <button
@@ -30,7 +30,7 @@
           @change="$emit('update:selectedFilter', $event.target.value)"
           class="appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
         >
-          <option value="all">All Principals</option>
+          <option value="all">All {{searchItem}}</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
@@ -42,7 +42,7 @@
 
     <!-- Results Summary -->
     <div class="mt-4 text-sm text-gray-600">
-      Showing {{ filteredCount }} of {{ totalCount }} principals
+      Showing {{ filteredCount }} of {{ totalCount }} {{searchItem}}
       <span v-if="searchQuery" class="font-medium">for "{{ searchQuery }}"</span>
     </div>
   </div>
@@ -51,6 +51,7 @@
 <script setup>
 defineProps({
   searchQuery: String,
+  searchItem: String,
   selectedFilter: String,
   filteredCount: Number,
   totalCount: Number

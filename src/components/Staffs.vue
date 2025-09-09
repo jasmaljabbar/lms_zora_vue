@@ -1,73 +1,35 @@
-<!-- src/components/Staff.vue -->
+<!-- src/components/Staffs.vue -->
 <template>
   <div class="p-4 sm:p-6">
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Staff Management</h2>
-        <p class="text-sm text-gray-600 mt-1">View all staff members by school</p>
+        <p class="text-sm text-gray-600 mt-1">Manage all staff members in your system</p>
       </div>
+      <button 
+        @click="navigateToAddStaff" 
+        class="w-full sm:w-auto px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
+      >
+        <i class="pi pi-plus mr-2"></i>
+        Add Staff
+      </button>
     </div>
 
-    <!-- School Selection and Search -->
-    <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6">
-      <div class="flex flex-col sm:flex-row gap-4">
-        <!-- School Selection -->
-        <div class="flex-1 relative">
-          <label for="school-select" class="block text-sm font-medium text-gray-700 mb-2">Select School</label>
-          <select
-            id="school-select"
-            v-model="selectedSchoolId"
-            @change="fetchStaff"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          >
-            <!-- <option value="">All Schools</option> -->
-            <option v-for="school in schools" :key="school.id" :value="school.id">
-              {{ school.name }}
-            </option>
-          </select>
-          <div class="absolute inset-y-0 right-0 top-6 flex items-center px-2 pointer-events-none">
-            <!-- <i class="pi pi-chevron-down text-gray-400"></i> -->
-          </div>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="flex-1 relative">
-          <label for="staff-search" class="block text-sm font-medium text-gray-700 mb-2">Search Staff</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="pi pi-search text-gray-400"></i>
-            </div>
-            <input
-              id="staff-search"
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search staff by name..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            />
-            <button
-              v-if="searchQuery"
-              @click="clearSearch"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              <i class="pi pi-times text-gray-400 hover:text-gray-600"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Results Summary -->
-      <div class="mt-4 text-sm text-gray-600">
-        Showing {{ filteredStaff.length }} of {{ staff.length }} staff members
-        <span v-if="selectedSchoolId"> in {{ selectedSchoolName }}</span>
-        <span v-if="searchQuery"> for "{{ searchQuery }}"</span>
-      </div>
-    </div>
+    <!-- Search and Filters -->
+    <SearchAndFilters
+      v-model:searchQuery="searchQuery"
+      v-model:searchItem="searchItem"
+      v-model:selectedFilter="selectedFilter"
+      :filtered-count="filteredStaffs.length"
+      :total-count="staffs.length"
+      @clear-search="clearSearch"
+    />
 
     <!-- Loading State -->
     <div v-if="loading" class="bg-white p-12 rounded-lg shadow-md text-center">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-      <p class="text-gray-500">Loading staff...</p>
+      <p class="text-gray-500">Loading Staff...</p>
     </div>
 
     <!-- Staff Listing -->
@@ -78,58 +40,25 @@
           <h3 class="text-lg font-semibold text-gray-800 mb-4">Staff Members</h3>
         </div>
         
-        <div v-if="filteredStaff.length === 0" class="text-center py-12">
+        <div v-if="filteredStaffs.length === 0" class="text-center py-12">
           <i class="pi pi-users text-4xl text-gray-300 mb-4"></i>
           <p class="text-gray-500 mb-2">
             {{ searchQuery ? 'No staff found matching your search' : 'No staff found' }}
           </p>
           <p class="text-sm text-gray-400">
-            {{ searchQuery ? 'Try adjusting your search terms' : selectedSchoolId ? 'This school has no staff' : 'No staff available' }}
+            {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first staff member to get started' }}
           </p>
         </div>
 
         <div class="divide-y divide-gray-200">
-          <div
-            v-for="staffMember in filteredStaff"
-            :key="staffMember.id"
-            class="p-4 hover:bg-gray-50 transition-colors duration-200"
-          >
-            <!-- Staff Header -->
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex-1">
-                <h4 class="font-semibold text-gray-900 text-lg">{{ staffMember.first_name }} {{ staffMember.last_name }}</h4>
-                <p class="text-sm text-gray-600 mt-1">Staff ID: {{ staffMember.staff_id }}</p>
-                <div class="flex items-center mt-2">
-                  <span :class="[
-                    'px-2 py-1 text-xs font-medium rounded-full',
-                    staffMember.is_active_staff ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]">
-                    {{ staffMember.is_active_staff ? 'Active' : 'Inactive' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Staff Details -->
-            <div class="space-y-2 text-sm">
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-briefcase mr-2"></i>
-                <span>{{ staffMember.department || 'No department specified' }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-calendar mr-2"></i>
-                <span>Hired: {{ formatDate(staffMember.hire_date) }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-phone mr-2"></i>
-                <span>{{ staffMember.mobile_number || staffMember.phone_number || 'No contact number' }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-envelope mr-2"></i>
-                <span>{{ staffMember.email || 'No email available' }}</span>
-              </div>
-            </div>
-          </div>
+          <StaffCard
+            v-for="staff in filteredStaffs"
+            :key="staff.user_id"
+            :staff="staff"
+            @view="viewStaffDetails"
+            @edit="editStaff"
+            @delete="confirmDelete"
+          />
         </div>
       </div>
 
@@ -153,154 +82,334 @@
                   Department
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hire Date
+                  Employment Type
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
+                  Hire Date
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-if="filteredStaff.length === 0">
-                <td colspan="6" class="px-6 py-12 text-center">
+              <tr v-if="filteredStaffs.length === 0">
+                <td colspan="7" class="px-6 py-12 text-center">
                   <i class="pi pi-users text-4xl text-gray-300 mb-4 block"></i>
                   <p class="text-gray-500 mb-2">
                     {{ searchQuery ? 'No staff found matching your search' : 'No staff found' }}
                   </p>
                   <p class="text-sm text-gray-400">
-                    {{ searchQuery ? 'Try adjusting your search terms' : selectedSchoolId ? 'This school has no staff' : 'No staff available' }}
+                    {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first staff member to get started' }}
                   </p>
                 </td>
               </tr>
-              <tr
-                v-for="staffMember in filteredStaff"
-                :key="staffMember.id"
-                class="hover:bg-gray-50 transition-colors duration-200"
-              >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">
-                    {{ staffMember.first_name }} {{ staffMember.last_name }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ staffMember.staff_id }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ staffMember.department || 'N/A' }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ formatDate(staffMember.hire_date) }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">
-                    {{ staffMember.mobile_number || staffMember.phone_number || 'N/A' }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="[
-                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                    staffMember.is_active_staff ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]">
-                    {{ staffMember.is_active_staff ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-              </tr>
+              <StaffTableRow
+                v-for="staff in filteredStaffs"
+                :key="staff.user_id"
+                :staff="staff"
+                @view="viewStaffDetails"
+                @edit="editStaff"
+                @delete="confirmDelete"
+              />
             </tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <!-- Staff Details Modal -->
+    <StaffDetailsModal
+      v-if="showDetailsModal"
+      :show="showDetailsModal"
+      :staff="selectedStaff"
+      @close="closeDetailsModal"
+      @edit="editStaff"
+    />
+
+    <!-- Edit Staff Modal -->
+    <StaffForm
+      v-if="showEditModal"
+      :show="showEditModal"
+      :staff="editForm"
+      :errors="errors"
+      :loading="updating"
+      :is-editing="true"
+      @close="closeEditModal"
+      @submit="updateStaff"
+    />
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteConfirmation
+      v-if="showDeleteModal"
+      :show="showDeleteModal"
+      :item="staffToDelete"
+      :loading="deleting"
+      item_type="staff"
+      @confirm="deleteStaff"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../api/axios';
 
-const schools = ref([]);
-const staff = ref([]);
-const selectedSchoolId = ref('');
-const searchQuery = ref('');
-const loading = ref(false);
+// Import components
+import StaffForm from './StaffForm.vue';
+import StaffCard from './StaffCard.vue';
+import StaffTableRow from './StaffTableRow.vue';
+import StaffDetailsModal from './StaffDetailsModal.vue';
+import SearchAndFilters from './Admin/SearchAndFilters.vue';
+import DeleteConfirmation from './DeleteConfirmation.vue';
+import { toast } from 'vue3-toastify'
+import { useRoute } from 'vue-router';
 
-// Computed property for filtered staff
-const filteredStaff = computed(() => {
-  let filtered = staff.value;
+
+const router = useRouter();
+const staffs = ref([]);
+const searchQuery = ref('');
+const selectedFilter = ref('all');
+const loading = ref(false);
+const updating = ref(false);
+const deleting = ref(false);
+const searchItem = ref('staff');
+
+const route = useRoute();
+
+onMounted(() => {
+  if (route.query.success === 'true') {
+    toast.success("Staff added successfully!")
+    // remove query param so it doesn’t trigger again
+    router.replace({ query: { ...route.query, success: undefined } })
+  }
+})
+
+// Details Modal
+const showDetailsModal = ref(false);
+const selectedStaff = ref(null);
+
+// Edit Modal
+const showEditModal = ref(false);
+const editForm = ref({
+    first_name: '',
+    last_name: '',
+    gender: '',
+    date_of_birth: '',
+    bio: '',
+    phone_number: '',
+    mobile_number: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    country: '',
+    postal_code: '',
+    staff_id: '',
+    department: '',
+    employment_type: '',
+    hire_date: '',
+    office_location: '',
+    supervisor_id: null,
+    is_active_staff: true
+});
+const errors = ref({});
+const staffToEdit = ref(null);
+
+// Delete Modal
+const showDeleteModal = ref(false);
+const staffToDelete = ref(null);
+
+// Computed property for filtered staffs
+const filteredStaffs = computed(() => {
+  let filtered = staffs.value;
 
   // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(staffMember => 
-      staffMember.first_name.toLowerCase().includes(query) ||
-      staffMember.last_name.toLowerCase().includes(query) ||
-      (staffMember.staff_id && staffMember.staff_id.toLowerCase().includes(query))
+    filtered = filtered.filter(staff => 
+      staff.first_name?.toLowerCase().includes(query) ||
+      staff.last_name?.toLowerCase().includes(query) ||
+      staff.staff_id?.toLowerCase().includes(query) ||
+      staff.department?.toLowerCase().includes(query)
     );
+  }
+
+  // Apply status filter
+  if (selectedFilter.value === 'active') {
+    filtered = filtered.filter(staff => staff.is_active_staff);
+  } else if (selectedFilter.value === 'inactive') {
+    filtered = filtered.filter(staff => !staff.is_active_staff);
   }
 
   return filtered;
 });
 
-// Get selected school name
-const selectedSchoolName = computed(() => {
-  if (!selectedSchoolId.value) return 'All Schools';
-  const school = schools.value.find(s => s.id == selectedSchoolId.value);
-  return school ? school.name : 'Selected School';
-});
-
-// Fetch schools list
-const fetchSchools = async () => {
-  try {
-    const response = await api.get('/school_profiles/');
-    schools.value = response.data;
-  } catch (error) {
-    console.error('Error fetching schools:', error);
-  }
-};
-
-// Fetch staff based on selected school
-const fetchStaff = async () => {
+const fetchStaffs = async () => {
   loading.value = true;
   try {
-    let url = '/staff_profilesadmin/';
-    if (selectedSchoolId.value) {
-      url += `${selectedSchoolId.value}`;
-    }
-    
-    const response = await api.get(url);
-    staff.value = response.data;
+    const response = await api.get('/staff_profiles/');
+    staffs.value = response.data;
   } catch (error) {
     console.error('Error fetching staff:', error);
-    staff.value = [];
+    // Handle error, e.g., show a toast message
   } finally {
     loading.value = false;
   }
+};
+
+const navigateToAddStaff = () => {
+  router.push('/principal/add');
 };
 
 const clearSearch = () => {
   searchQuery.value = '';
 };
 
-// Format date for display
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A';
+// Details Modal Functions
+const viewStaffDetails = (staff) => {
+  selectedStaff.value = staff;
+  showDetailsModal.value = true;
+};
+
+const closeDetailsModal = () => {
+  showDetailsModal.value = false;
+  selectedStaff.value = null;
+};
+
+// Edit Modal Functions
+const editStaff = (staff) => {
+  staffToEdit.value = staff;
+  editForm.value = {
+    first_name: staff.first_name || '',
+    last_name: staff.last_name || '',
+    gender: staff.gender || '',
+    date_of_birth: staff.date_of_birth || '',
+    bio: staff.bio || '',
+    phone_number: staff.phone_number || '',
+    mobile_number: staff.mobile_number || '',
+    address_line1: staff.address_line1 || '',
+    address_line2: staff.address_line2 || '',
+    city: staff.city || '',
+    state: staff.state || '',
+    country: staff.country || '',
+    postal_code: staff.postal_code || '',
+    staff_id: staff.user_id || '',
+    department: staff.department || '',
+    employment_type: staff.employment_type || '',
+    hire_date: staff.hire_date || '',
+    office_location: staff.office_location || '',
+    supervisor_id: staff.supervisor_id || null,
+    is_active_staff: staff.is_active_staff
+  };
+  errors.value = {};
+  showEditModal.value = true;
+  // Close details modal if open
+  showDetailsModal.value = false;
+};
+
+const closeEditModal = () => {
+  showEditModal.value = false;
+  staffToEdit.value = null;
+  editForm.value = {
+    first_name: '',
+    last_name: '',
+    gender: '',
+    date_of_birth: '',
+    bio: '',
+    phone_number: '',
+    mobile_number: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    country: '',
+    postal_code: '',
+    staff_id: '',
+    department: '',
+    employment_type: '',
+    hire_date: '',
+    office_location: '',
+    supervisor_id: null,
+    is_active_staff: true
+  };
+  errors.value = {};
+};
+
+const updateStaff = async () => {
+  if (!staffToEdit.value) return;
+  
+  updating.value = true;
+  errors.value = {};
   
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
+    const response = await api.put(`/staff_profiles_principal/${staffToEdit.value.user_id}/`, editForm.value);
+    
+    // Update the staff in the local array
+    const index = staffs.value.findIndex(s => s.user_id === staffToEdit.value.user_id);
+    if (index !== -1) {
+      staffs.value[index] = {
+        ...staffs.value[index],
+        ...response.data
+      };
+    }
+    
+    closeEditModal();
+    // You might want to show a success toast here
+    toast.success("Updated successful!")
+  
   } catch (error) {
-    return dateString;
+    console.error('Error updating staff:', error);
+    if (error.response && error.response.data) {
+      errors.value = error.response.data;
+    }
+    // Handle error, show error toast
+  } finally {
+    updating.value = false;
   }
 };
 
+// Delete Modal Functions
+const confirmDelete = (staff) => {
+  staffToDelete.value = staff;
+  showDeleteModal.value = true;
+  // Close details modal if open
+  showDetailsModal.value = false;
+};
+
+const deleteStaff = async () => {
+  if (!staffToDelete.value) return;
+  
+  deleting.value = true;
+  try {
+    await api.delete(`/staff_profiles_principal/${staffToDelete.value.user_id}/`);
+    
+    // Remove from local array
+    staffs.value = staffs.value.filter(s => s.user_id !== staffToDelete.value.user_id);
+    
+    showDeleteModal.value = false;
+    staffToDelete.value = null;
+    // You might want to show a success toast here
+    toast.success("Staff deleted successfully!")
+  } catch (error) {
+    console.error('Error deleting staff:', error);
+    // Handle error, show error toast
+  } finally {
+    deleting.value = false;
+  }
+};
+
+const cancelDelete = () => {
+  showDeleteModal.value = false;
+  staffToDelete.value = null;
+};
+
 onMounted(() => {
-  fetchSchools();
-  fetchStaff();
+  fetchStaffs();
 });
 </script>
-
-<style scoped>
-/* Add any specific styles here */
-</style>

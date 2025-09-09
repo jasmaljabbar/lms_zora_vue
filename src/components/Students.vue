@@ -4,70 +4,32 @@
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
       <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Students Management</h2>
-        <p class="text-sm text-gray-600 mt-1">View all students by school</p>
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Student Management</h2>
+        <p class="text-sm text-gray-600 mt-1">Manage all student in your system</p>
       </div>
+      <button 
+        @click="navigateToAddStudent" 
+        class="w-full sm:w-auto px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
+      >
+        <i class="pi pi-plus mr-2"></i>
+        Add Student
+      </button>
     </div>
 
-    <!-- School Selection and Search -->
-    <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6">
-      <div class="flex flex-col sm:flex-row gap-4">
-        <!-- School Selection -->
-        <div class="flex-1 relative">
-          <label for="school-select" class="block text-sm font-medium text-gray-700 mb-2">Select School</label>
-          <select
-            id="school-select"
-            v-model="selectedSchoolId"
-            @change="fetchStudents"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          >
-            <!-- <option value="">All Schools</option> -->
-            <option v-for="school in schools" :key="school.id" :value="school.id">
-              {{ school.name }}
-            </option>
-          </select>
-          <!-- <div class="absolute inset-y-0 right-0 top-6 flex items-center px-2 pointer-events-none"> -->
-            <!-- <i class="pi pi-chevron-down text-gray-400"></i> -->
-          <!-- </div> -->
-        </div>
-
-        <!-- Search Bar -->
-        <div class="flex-1 relative">
-          <label for="student-search" class="block text-sm font-medium text-gray-700 mb-2">Search Students</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="pi pi-search text-gray-400"></i>
-            </div>
-            <input
-              id="student-search"
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search students by name or ID..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            />
-            <button
-              v-if="searchQuery"
-              @click="clearSearch"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              <i class="pi pi-times text-gray-400 hover:text-gray-600"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Results Summary -->
-      <div class="mt-4 text-sm text-gray-600">
-        Showing {{ filteredStudents.length }} of {{ students.length }} students
-        <span v-if="selectedSchoolId"> in {{ selectedSchoolName }}</span>
-        <span v-if="searchQuery"> for "{{ searchQuery }}"</span>
-      </div>
-    </div>
+    <!-- Search and Filters -->
+    <SearchAndFilters
+      v-model:searchQuery="searchQuery"
+      v-model:searchItem="searchItem"
+      v-model:selectedFilter="selectedFilter"
+      :filtered-count="filteredStudents.length"
+      :total-count="students.length"
+      @clear-search="clearSearch"
+    />
 
     <!-- Loading State -->
     <div v-if="loading" class="bg-white p-12 rounded-lg shadow-md text-center">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-      <p class="text-gray-500">Loading students...</p>
+      <p class="text-gray-500">Loading Students...</p>
     </div>
 
     <!-- Students Listing -->
@@ -84,67 +46,26 @@
             {{ searchQuery ? 'No students found matching your search' : 'No students found' }}
           </p>
           <p class="text-sm text-gray-400">
-            {{ searchQuery ? 'Try adjusting your search terms' : selectedSchoolId ? 'This school has no students' : 'No students available' }}
+            {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first teacher to get started' }}
           </p>
         </div>
 
         <div class="divide-y divide-gray-200">
-          <div
+          <StudentCard
             v-for="student in filteredStudents"
-            :key="student.id"
-            class="p-4 hover:bg-gray-50 transition-colors duration-200"
-          >
-            <!-- Student Header -->
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex-1">
-                <h4 class="font-semibold text-gray-900 text-lg">{{ student.first_name }} {{ student.last_name }}</h4>
-                <p class="text-sm text-gray-600 mt-1">Student ID: {{ student.student_id }}</p>
-                <div class="flex items-center mt-2">
-                  <span :class="[
-                    'px-2 py-1 text-xs font-medium rounded-full',
-                    student.is_active_student ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]">
-                    {{ student.is_active_student ? 'Active' : 'Inactive' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Student Details -->
-            <div class="space-y-2 text-sm">
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-id-card mr-2"></i>
-                <span>Roll No: {{ student.roll_number || 'N/A' }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-book mr-2"></i>
-                <span>Class: {{ student.class || 'N/A' }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-calendar mr-2"></i>
-                <span>DOB: {{ formatDate(student.date_of_birth) }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-phone mr-2"></i>
-                <span>{{ student.mobile_number || student.phone_number || 'No contact number' }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-envelope mr-2"></i>
-                <span>{{ student.email || 'No email available' }}</span>
-              </div>
-              <div v-if="student.guardian_name" class="flex items-center text-gray-600">
-                <i class="pi pi-user mr-2"></i>
-                <span>Guardian: {{ student.guardian_name }}</span>
-              </div>
-            </div>
-          </div>
+            :key="student.user_id"
+            :student="student"
+            @view="viewStudentDetails"
+            @edit="editStudent"
+            @delete="confirmDelete"
+          />
         </div>
       </div>
 
       <!-- Desktop Table View -->
       <div class="hidden lg:block">
         <div class="p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Students</h3>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Student</h3>
         </div>
 
         <div class="overflow-x-auto">
@@ -157,94 +78,147 @@
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Student ID
                 </th>
-                <!-- <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Roll No
-                </th> -->
-                <!-- <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Class
-                </th> -->
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  DOB
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Guardian
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Join Date
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
+                </th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-if="filteredStudents.length === 0">
-                <td colspan="8" class="px-6 py-12 text-center">
+                <td colspan="7" class="px-6 py-12 text-center">
                   <i class="pi pi-user text-4xl text-gray-300 mb-4 block"></i>
                   <p class="text-gray-500 mb-2">
                     {{ searchQuery ? 'No students found matching your search' : 'No students found' }}
                   </p>
                   <p class="text-sm text-gray-400">
-                    {{ searchQuery ? 'Try adjusting your search terms' : selectedSchoolId ? 'This school has no students' : 'No students available' }}
+                    {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first teacher to get started' }}
                   </p>
                 </td>
               </tr>
-              <tr
+              <StudentTableRow
                 v-for="student in filteredStudents"
-                :key="student.id"
-                class="hover:bg-gray-50 transition-colors duration-200"
-              >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">
-                    {{ student.first_name }} {{ student.last_name }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">ST000{{ student.user_id }}</div>
-                </td>
-                <!-- <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ student.roll_number || 'N/A' }}</div>
-                </td> -->
-                <!-- <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ student.class || 'N/A' }}</div>
-                </td> -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ formatDate(student.date_of_birth) }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">
-                    {{ student.mobile_number || student.guardian_phone || 'N/A' }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ student.guardian_name || 'N/A' }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="[
-                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                    student.is_active_student ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]">
-                    {{ student.is_active_student ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-              </tr>
+                :key="student.user_id"
+                :student="student"
+                @view="viewStudentDetails"
+                @edit="editStudent"
+                @delete="confirmDelete"
+              />
             </tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <!-- Student Details Modal -->
+    <StudentDetailsModal
+      v-if="showDetailsModal"
+      :show="showDetailsModal"
+      :student="selectedStudent"
+      @close="closeDetailsModal"
+      @edit="editStudent"
+    />
+
+    <!-- Edit Student Modal -->
+    <StudentForm
+      v-if="showEditModal"
+      :show="showEditModal"
+      :student="editForm"
+      :errors="errors"
+      :loading="updating"
+      :is-editing="true"
+      @close="closeEditModal"
+      @submit="updateStudent"
+    />
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteConfirmation
+      v-if="showDeleteModal"
+      :show="showDeleteModal"
+      :item="teacherToDelete"
+      :loading="deleting"
+      item_type="teacher"
+      @confirm="deleteTeacher"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../api/axios';
 
-const schools = ref([]);
+
+// Import components
+import StudentForm from './StudentForm.vue';
+import StudentCard from './StudentCard.vue';
+import StudentTableRow from './StudentTableRow.vue';
+import StudentDetailsModal from './StudentDetailsModal.vue';
+import SearchAndFilters from './Admin/SearchAndFilters.vue';
+import DeleteConfirmation from './DeleteConfirmation.vue';
+import { toast } from 'vue3-toastify'
+import { useRoute } from 'vue-router';
+
+const router = useRouter();
 const students = ref([]);
-const selectedSchoolId = ref('');
 const searchQuery = ref('');
+const selectedFilter = ref('all');
 const loading = ref(false);
+const updating = ref(false);
+const deleting = ref(false);
+const searchItem = ref('teacher');
+
+const route = useRoute();
+onMounted(() => {
+  if (route.query.success === 'true') {
+    toast.success("Student added successfully!")
+    // remove query param so it doesn't trigger again
+    router.replace({ query: { ...route.query, success: undefined } })
+  }
+})
+
+// Details Modal
+const showDetailsModal = ref(false);
+const selectedStudent = ref(null);
+
+// Edit Modal
+const showEditModal = ref(false);
+const editForm = ref({
+    first_name: '',
+    last_name: '',
+    gender: '',
+    date_of_birth: '',
+    bio: '',
+    phone_number: '',
+    mobile_number: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    country: '',
+    postal_code: '',
+    admission_date: '',
+    guardian_name: '',
+    guardian_phone: '',
+    guardian_relation: '',
+    academic_year: '',
+    is_active_student: true
+});
+const errors = ref({});
+const studentToEdit = ref(null);
+
+// Delete Modal
+const showDeleteModal = ref(false);
+const teacherToDelete = ref(null);
 
 // Computed property for filtered students
 const filteredStudents = computed(() => {
@@ -254,74 +228,182 @@ const filteredStudents = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(student => 
-      student.first_name.toLowerCase().includes(query) ||
-      student.last_name.toLowerCase().includes(query) ||
-      (student.student_id && student.student_id.toLowerCase().includes(query)) ||
-      (student.roll_number && student.roll_number.toLowerCase().includes(query))
+      student.first_name?.toLowerCase().includes(query) ||
+      student.last_name?.toLowerCase().includes(query) ||
+      student.teacher_id?.toLowerCase().includes(query) ||
+      student.department?.toLowerCase().includes(query) ||
+      student.subjects?.toLowerCase().includes(query)
     );
+  }
+
+  // Apply status filter
+  if (selectedFilter.value === 'active') {
+    filtered = filtered.filter(student => student.is_active_student);
+  } else if (selectedFilter.value === 'inactive') {
+    filtered = filtered.filter(student => !student.is_active_student);
   }
 
   return filtered;
 });
 
-// Get selected school name
-const selectedSchoolName = computed(() => {
-  if (!selectedSchoolId.value) return 'All Schools';
-  const school = schools.value.find(s => s.id == selectedSchoolId.value);
-  return school ? school.name : 'Selected School';
-});
-
-// Fetch schools list
-const fetchSchools = async () => {
-  try {
-    const response = await api.get('/school_profiles/');
-    schools.value = response.data;
-  } catch (error) {
-    console.error('Error fetching schools:', error);
-  }
-};
-
-// Fetch students based on selected school
 const fetchStudents = async () => {
   loading.value = true;
   try {
-    let url = '/student_profilesadmin/';
-    if (selectedSchoolId.value) {
-      url += `${selectedSchoolId.value}`;
-    }
-    
-    const response = await api.get(url);
+    const response = await api.get('/student_profiles/');
     students.value = response.data;
   } catch (error) {
     console.error('Error fetching students:', error);
-    students.value = [];
+    toast.error('Failed to load students');
   } finally {
     loading.value = false;
   }
+};
+
+const navigateToAddStudent = () => {
+  router.push('/principal/students/add'); // Update this path according to your routing
 };
 
 const clearSearch = () => {
   searchQuery.value = '';
 };
 
-// Format date for display
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A';
+// Details Modal Functions
+const viewStudentDetails = (student) => {
+  selectedStudent.value = student;
+  showDetailsModal.value = true;
+};
+
+const closeDetailsModal = () => {
+  showDetailsModal.value = false;
+  selectedStudent.value = null;
+};
+
+// Edit Modal Functions
+const editStudent = (student) => {
+  studentToEdit.value = student;
+  editForm.value = {
+    first_name: student.first_name || '',
+    last_name: student.last_name || '',
+    gender: student.gender || '',
+    date_of_birth: student.date_of_birth || '',
+    bio: student.bio || '',
+    phone_number: student.phone_number || '',
+    mobile_number: student.mobile_number || '',
+    address_line1: student.address_line1 || '',
+    address_line2: student.address_line2 || '',
+    city: student.city || '',
+    state: student.state || '',
+    country: student.country || '',
+    postal_code: student.postal_code || '',
+    admission_date: student.admission_date || '',
+    guardian_name: student.guardian_name || '',
+    guardian_phone: student.guardian_phone || '',
+    guardian_relation: student.guardian_relation || '',
+    academic_year: student.academic_year || '',
+    is_active_student: student.is_active_student
+  };
+  errors.value = {};
+  showEditModal.value = true;
+  // Close details modal if open
+  showDetailsModal.value = false;
+};
+
+const closeEditModal = () => {
+  showEditModal.value = false;
+  studentToEdit.value = null;
+  editForm.value = {
+    first_name: '',
+    last_name: '',
+    gender: '',
+    date_of_birth: '',
+    bio: '',
+    phone_number: '',
+    mobile_number: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    country: '',
+    postal_code: '',
+    admission_date: '',
+    guardian_name: '',
+    guardian_phone: '',
+    guardian_relation: '',
+    academic_year: '',
+    is_active_student: true
+  };
+  errors.value = {};
+};
+
+const updateStudent = async () => {
+  if (!studentToEdit.value) return;
+  
+  updating.value = true;
+  errors.value = {};
   
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
+    const response = await api.put(`/studentStaff_profiles/${studentToEdit.value.user_id}/`, editForm.value);
+    
+    // Update the teacher in the local array
+    const index = students.value.findIndex(t => t.user_id === studentToEdit.value.user_id);
+    if (index !== -1) {
+      students.value[index] = {
+        ...students.value[index],
+        ...response.data
+      };
+    }
+    
+    closeEditModal();
+    toast.success("Teacher updated successfully!");
+  
   } catch (error) {
-    return dateString;
+    console.error('Error updating teacher:', error);
+    if (error.response && error.response.data) {
+      errors.value = error.response.data;
+      toast.error('Failed to update teacher');
+    } else {
+      toast.error('An error occurred while updating teacher');
+    }
+  } finally {
+    updating.value = false;
   }
 };
 
+// Delete Modal Functions
+const confirmDelete = (teacher) => {
+  teacherToDelete.value = teacher;
+  showDeleteModal.value = true;
+  // Close details modal if open
+  showDetailsModal.value = false;
+};
+
+const deleteTeacher = async () => {
+  if (!teacherToDelete.value) return;
+  
+  deleting.value = true;
+  try {
+    await api.delete(`/teacher_profiles_staff/${teacherToDelete.value.user_id}/`);
+    
+    // Remove from local array
+    students.value = students.value.filter(t => t.user_id !== teacherToDelete.value.user_id);
+    
+    showDeleteModal.value = false;
+    teacherToDelete.value = null;
+    toast.success("Teacher deleted successfully!");
+  } catch (error) {
+    console.error('Error deleting teacher:', error);
+    toast.error('Failed to delete teacher');
+  } finally {
+    deleting.value = false;
+  }
+};
+
+const cancelDelete = () => {
+  showDeleteModal.value = false;
+  teacherToDelete.value = null;
+};
+
 onMounted(() => {
-  fetchSchools();
   fetchStudents();
 });
 </script>
-
-<style scoped>
-/* Add any specific styles here */
-</style>

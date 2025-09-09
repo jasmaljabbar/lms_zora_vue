@@ -5,69 +5,31 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Teachers Management</h2>
-        <p class="text-sm text-gray-600 mt-1">View all teachers by school</p>
+        <p class="text-sm text-gray-600 mt-1">Manage all teachers in your system</p>
       </div>
+      <button 
+        @click="navigateToAddTeacher" 
+        class="w-full sm:w-auto px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
+      >
+        <i class="pi pi-plus mr-2"></i>
+        Add Teacher
+      </button>
     </div>
 
-    <!-- School Selection and Search -->
-    <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6">
-      <div class="flex flex-col sm:flex-row gap-4">
-        <!-- School Selection -->
-        <div class="flex-1 relative">
-          <label for="school-select" class="block text-sm font-medium text-gray-700 mb-2">Select School</label>
-          <select
-            id="school-select"
-            v-model="selectedSchoolId"
-            @change="fetchTeachers"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          >
-            <!-- <option value="">All Schools</option> -->
-            <option v-for="school in schools" :key="school.id" :value="school.id">
-              {{ school.name }}
-            </option>
-          </select>
-          <div class="absolute inset-y-0 right-0 top-6 flex items-center px-2 pointer-events-none">
-            <!-- <i class="pi pi-chevron-down text-gray-400"></i> -->
-          </div>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="flex-1 relative">
-          <label for="teacher-search" class="block text-sm font-medium text-gray-700 mb-2">Search Teachers</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="pi pi-search text-gray-400"></i>
-            </div>
-            <input
-              id="teacher-search"
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search teachers by name..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            />
-            <button
-              v-if="searchQuery"
-              @click="clearSearch"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              <i class="pi pi-times text-gray-400 hover:text-gray-600"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Results Summary -->
-      <div class="mt-4 text-sm text-gray-600">
-        Showing {{ filteredTeachers.length }} of {{ teachers.length }} teachers
-        <span v-if="selectedSchoolId"> in {{ selectedSchoolName }}</span>
-        <span v-if="searchQuery"> for "{{ searchQuery }}"</span>
-      </div>
-    </div>
+    <!-- Search and Filters -->
+    <SearchAndFilters
+      v-model:searchQuery="searchQuery"
+      v-model:searchItem="searchItem"
+      v-model:selectedFilter="selectedFilter"
+      :filtered-count="filteredTeachers.length"
+      :total-count="teachers.length"
+      @clear-search="clearSearch"
+    />
 
     <!-- Loading State -->
     <div v-if="loading" class="bg-white p-12 rounded-lg shadow-md text-center">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-      <p class="text-gray-500">Loading teachers...</p>
+      <p class="text-gray-500">Loading Teachers...</p>
     </div>
 
     <!-- Teachers Listing -->
@@ -84,56 +46,19 @@
             {{ searchQuery ? 'No teachers found matching your search' : 'No teachers found' }}
           </p>
           <p class="text-sm text-gray-400">
-            {{ searchQuery ? 'Try adjusting your search terms' : selectedSchoolId ? 'This school has no teachers' : 'No teachers available' }}
+            {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first teacher to get started' }}
           </p>
         </div>
 
         <div class="divide-y divide-gray-200">
-          <div
+          <TeacherCard
             v-for="teacher in filteredTeachers"
-            :key="teacher.id"
-            class="p-4 hover:bg-gray-50 transition-colors duration-200"
-          >
-            <!-- Teacher Header -->
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex-1">
-                <h4 class="font-semibold text-gray-900 text-lg">{{ teacher.first_name }} {{ teacher.last_name }}</h4>
-                <p class="text-sm text-gray-600 mt-1">Teacher ID: {{ teacher.teacher_id }}</p>
-                <div class="flex items-center mt-2">
-                  <span :class="[
-                    'px-2 py-1 text-xs font-medium rounded-full',
-                    teacher.is_active_teacher ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]">
-                    {{ teacher.is_active_teacher ? 'Active' : 'Inactive' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Teacher Details -->
-            <div class="space-y-2 text-sm">
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-book mr-2"></i>
-                <span>{{ teacher.department || 'No department specified' }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-calendar mr-2"></i>
-                <span>Joined: {{ formatDate(teacher.join_date) }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-phone mr-2"></i>
-                <span>{{ teacher.mobile_number || teacher.phone_number || 'No contact number' }}</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <i class="pi pi-envelope mr-2"></i>
-                <span>{{ teacher.email || 'No email available' }}</span>
-              </div>
-              <div v-if="teacher.subjects" class="flex items-center text-gray-600">
-                <i class="pi pi-tags mr-2"></i>
-                <span>Subjects: {{ teacher.subjects }}</span>
-              </div>
-            </div>
-          </div>
+            :key="teacher.user_id"
+            :teacher="teacher"
+            @view="viewTeacherDetails"
+            @edit="editTeacher"
+            @delete="confirmDelete"
+          />
         </div>
       </div>
 
@@ -160,13 +85,10 @@
                   Join Date
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <!-- <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Subjects
-                </th> -->
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
+                </th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -178,63 +100,124 @@
                     {{ searchQuery ? 'No teachers found matching your search' : 'No teachers found' }}
                   </p>
                   <p class="text-sm text-gray-400">
-                    {{ searchQuery ? 'Try adjusting your search terms' : selectedSchoolId ? 'This school has no teachers' : 'No teachers available' }}
+                    {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first teacher to get started' }}
                   </p>
                 </td>
               </tr>
-              <tr
+              <TeacherTableRow
                 v-for="teacher in filteredTeachers"
-                :key="teacher.id"
-                class="hover:bg-gray-50 transition-colors duration-200"
-              >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">
-                    {{ teacher.first_name }} {{ teacher.last_name }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">TC000{{ teacher.user_id }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ teacher.department || 'N/A' }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ formatDate(teacher.created_at) }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">
-                    {{ teacher.mobile_number || teacher.phone_number || 'N/A' }}
-                  </div>
-                </td>
-                <!-- <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ teacher.subjects || 'N/A' }}</div>
-                </td> -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="[
-                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                    teacher.is_active_teacher ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]">
-                    {{ teacher.is_active_teacher ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-              </tr>
+                :key="teacher.user_id"
+                :teacher="teacher"
+                @view="viewTeacherDetails"
+                @edit="editTeacher"
+                @delete="confirmDelete"
+              />
             </tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <!-- Teacher Details Modal -->
+    <TeacherDetailsModal
+      v-if="showDetailsModal"
+      :show="showDetailsModal"
+      :teacher="selectedTeacher"
+      @close="closeDetailsModal"
+      @edit="editTeacher"
+    />
+
+    <!-- Edit Teacher Modal -->
+    <TeacherForm
+      v-if="showEditModal"
+      :show="showEditModal"
+      :teacher="editForm"
+      :errors="errors"
+      :loading="updating"
+      :is-editing="true"
+      @close="closeEditModal"
+      @submit="updateTeacher"
+    />
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteConfirmation
+      v-if="showDeleteModal"
+      :show="showDeleteModal"
+      :item="teacherToDelete"
+      :loading="deleting"
+      item_type="teacher"
+      @confirm="deleteTeacher"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../api/axios';
 
-const schools = ref([]);
+
+// Import components
+import TeacherForm from './TeacherForm.vue';
+import TeacherCard from './TeacherCard.vue';
+import TeacherTableRow from './TeacherTableRow.vue';
+import TeacherDetailsModal from './TeacherDetailsModal.vue';
+import SearchAndFilters from './Admin/SearchAndFilters.vue';
+import DeleteConfirmation from './DeleteConfirmation.vue';
+import { toast } from 'vue3-toastify'
+import { useRoute } from 'vue-router';
+
+const router = useRouter();
 const teachers = ref([]);
-const selectedSchoolId = ref('');
 const searchQuery = ref('');
+const selectedFilter = ref('all');
 const loading = ref(false);
+const updating = ref(false);
+const deleting = ref(false);
+const searchItem = ref('teacher');
+
+const route = useRoute();
+
+onMounted(() => {
+  if (route.query.success === 'true') {
+    toast.success("Teacher added successfully!")
+    // remove query param so it doesn't trigger again
+    router.replace({ query: { ...route.query, success: undefined } })
+  }
+})
+
+// Details Modal
+const showDetailsModal = ref(false);
+const selectedTeacher = ref(null);
+
+// Edit Modal
+const showEditModal = ref(false);
+const editForm = ref({
+    first_name: '',
+    last_name: '',
+    gender: '',
+    date_of_birth: '',
+    bio: '',
+    phone_number: '',
+    mobile_number: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    country: '',
+    postal_code: '',
+    department: '',
+    // subjects: '',
+    office_hours: '',
+    is_active_teacher: true
+});
+const errors = ref({});
+const teacherToEdit = ref(null);
+
+// Delete Modal
+const showDeleteModal = ref(false);
+const teacherToDelete = ref(null);
 
 // Computed property for filtered teachers
 const filteredTeachers = computed(() => {
@@ -244,73 +227,186 @@ const filteredTeachers = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(teacher => 
-      teacher.first_name.toLowerCase().includes(query) ||
-      teacher.last_name.toLowerCase().includes(query) ||
-      (teacher.teacher_id && teacher.teacher_id.toLowerCase().includes(query))
+      teacher.first_name?.toLowerCase().includes(query) ||
+      teacher.last_name?.toLowerCase().includes(query) ||
+      teacher.teacher_id?.toLowerCase().includes(query) ||
+      teacher.department?.toLowerCase().includes(query) ||
+      teacher.subjects?.toLowerCase().includes(query)
     );
+  }
+
+  // Apply status filter
+  if (selectedFilter.value === 'active') {
+    filtered = filtered.filter(teacher => teacher.is_active_teacher);
+  } else if (selectedFilter.value === 'inactive') {
+    filtered = filtered.filter(teacher => !teacher.is_active_teacher);
   }
 
   return filtered;
 });
 
-// Get selected school name
-const selectedSchoolName = computed(() => {
-  if (!selectedSchoolId.value) return 'All Schools';
-  const school = schools.value.find(s => s.id == selectedSchoolId.value);
-  return school ? school.name : 'Selected School';
-});
-
-// Fetch schools list
-const fetchSchools = async () => {
-  try {
-    const response = await api.get('/school_profiles/');
-    schools.value = response.data;
-  } catch (error) {
-    console.error('Error fetching schools:', error);
-  }
-};
-
-// Fetch teachers based on selected school
 const fetchTeachers = async () => {
   loading.value = true;
   try {
-    let url = '/teacher_profilesadmin/';
-    if (selectedSchoolId.value) {
-      url += `${selectedSchoolId.value}`;
-    }
-    
-    const response = await api.get(url);
+    const response = await api.get('/teacher_profiles/');
     teachers.value = response.data;
   } catch (error) {
     console.error('Error fetching teachers:', error);
-    teachers.value = [];
+    toast.error('Failed to load teachers');
   } finally {
     loading.value = false;
   }
+};
+
+const navigateToAddTeacher = () => {
+  router.push('/principal/teachers/add'); // Update this path according to your routing
 };
 
 const clearSearch = () => {
   searchQuery.value = '';
 };
 
-// Format date for display
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A';
+// Details Modal Functions
+const viewTeacherDetails = (teacher) => {
+  selectedTeacher.value = teacher;
+  showDetailsModal.value = true;
+};
+
+const closeDetailsModal = () => {
+  showDetailsModal.value = false;
+  selectedTeacher.value = null;
+};
+
+// Edit Modal Functions
+const editTeacher = (teacher) => {
+  teacherToEdit.value = teacher;
+  editForm.value = {
+    first_name: teacher.first_name || '',
+    last_name: teacher.last_name || '',
+    gender: teacher.gender || '',
+    date_of_birth: teacher.date_of_birth || '',
+    bio: teacher.bio || '',
+    phone_number: teacher.phone_number || '',
+    mobile_number: teacher.mobile_number || '',
+    address_line1: teacher.address_line1 || '',
+    address_line2: teacher.address_line2 || '',
+    city: teacher.city || '',
+    state: teacher.state || '',
+    country: teacher.country || '',
+    postal_code: teacher.postal_code || '',
+    teacher_id: teacher.teacher_id || '',
+    department: teacher.department || '',
+    subjects: teacher.subjects || '',
+    employment_type: teacher.employment_type || '',
+    join_date: teacher.join_date || '',
+    office_location: teacher.office_location || '',
+    supervisor_id: teacher.supervisor_id || null,
+    is_active_teacher: teacher.is_active_teacher
+  };
+  errors.value = {};
+  showEditModal.value = true;
+  // Close details modal if open
+  showDetailsModal.value = false;
+};
+
+const closeEditModal = () => {
+  showEditModal.value = false;
+  teacherToEdit.value = null;
+  editForm.value = {
+    first_name: '',
+    last_name: '',
+    gender: '',
+    date_of_birth: '',
+    bio: '',
+    phone_number: '',
+    mobile_number: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    country: '',
+    postal_code: '',
+    teacher_id: '',
+    department: '',
+    subjects: '',
+    employment_type: '',
+    join_date: '',
+    office_location: '',
+    supervisor_id: null,
+    is_active_teacher: true
+  };
+  errors.value = {};
+};
+
+const updateTeacher = async () => {
+  if (!teacherToEdit.value) return;
+  
+  updating.value = true;
+  errors.value = {};
   
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
+    const response = await api.put(`/teacher_profiles_staff/${teacherToEdit.value.user_id}/`, editForm.value);
+    
+    // Update the teacher in the local array
+    const index = teachers.value.findIndex(t => t.user_id === teacherToEdit.value.user_id);
+    if (index !== -1) {
+      teachers.value[index] = {
+        ...teachers.value[index],
+        ...response.data
+      };
+    }
+    
+    closeEditModal();
+    toast.success("Teacher updated successfully!");
+  
   } catch (error) {
-    return dateString;
+    console.error('Error updating teacher:', error);
+    if (error.response && error.response.data) {
+      errors.value = error.response.data;
+      toast.error('Failed to update teacher');
+    } else {
+      toast.error('An error occurred while updating teacher');
+    }
+  } finally {
+    updating.value = false;
   }
 };
 
+// Delete Modal Functions
+const confirmDelete = (teacher) => {
+  teacherToDelete.value = teacher;
+  showDeleteModal.value = true;
+  // Close details modal if open
+  showDetailsModal.value = false;
+};
+
+const deleteTeacher = async () => {
+  if (!teacherToDelete.value) return;
+  
+  deleting.value = true;
+  try {
+    await api.delete(`/teacher_profiles_staff/${teacherToDelete.value.user_id}/`);
+    
+    // Remove from local array
+    teachers.value = teachers.value.filter(t => t.user_id !== teacherToDelete.value.user_id);
+    
+    showDeleteModal.value = false;
+    teacherToDelete.value = null;
+    toast.success("Teacher deleted successfully!");
+  } catch (error) {
+    console.error('Error deleting teacher:', error);
+    toast.error('Failed to delete teacher');
+  } finally {
+    deleting.value = false;
+  }
+};
+
+const cancelDelete = () => {
+  showDeleteModal.value = false;
+  teacherToDelete.value = null;
+};
+
 onMounted(() => {
-  fetchSchools();
   fetchTeachers();
 });
 </script>
-
-<style scoped>
-/* Add any specific styles here */
-</style>

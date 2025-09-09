@@ -132,6 +132,15 @@ const saveToken = (token) => {
 
   // Save decoded payload (user details)
   localStorage.setItem("user", JSON.stringify(decoded));
+  console.log("Decoded JWT:", decoded.roles);
+  if (decoded.roles && decoded.roles.includes("admin")) {
+    router.push('/admin/dashboard');
+  } else if (decoded.roles && decoded.roles.includes("principal")) {
+    router.push('/principal/dashboard');
+  } else {
+    router.push('/dashboard'); // Default redirect if no specific role
+  }
+  // router.push('/admin/dashboard');
   
 };
 
@@ -234,7 +243,7 @@ const handleLogin = async () => {
     password.value = '';
 
     // Redirect to admin dashboard
-    router.push('/admin/dashboard');
+    // router.push('/admin/dashboard');
 
   } catch (error) {
     console.error('Login failed:', error);
