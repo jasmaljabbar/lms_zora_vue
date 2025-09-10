@@ -1,8 +1,8 @@
 <template>
   <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Teacher</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Student</h2>
 
-    <form @submit.prevent="addTeacher" class="space-y-6">
+    <form @submit.prevent="addStudent" class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
@@ -59,89 +59,89 @@
         </div>
         
         <div>
-          <label for="mobileNumber" class="block text-sm font-medium text-gray-700">Mobile Number</label>
+          <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
           <input 
-            type="text" 
-            id="mobileNumber" 
-            v-model="form.mobile_number"
-            @blur="validatePhoneNumber"
+            type="date" 
+            id="dateOfBirth" 
+            v-model="form.date_of_birth" 
+            required
+            @blur="validateDateOfBirth"
             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': phoneError }"
+            :class="{ 'border-red-500': dobError }"
           >
-          <p v-if="phoneError" class="text-red-500 text-xs mt-1">{{ phoneError }}</p>
-          <p class="text-gray-500 text-xs mt-1">Enter 10-digit mobile number (e.g., 9876543210)</p>
+          <p v-if="dobError" class="text-red-500 text-xs mt-1">{{ dobError }}</p>
         </div>
         
         <div>
-          <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-          <input type="text" id="city" v-model="form.city"
+          <label for="admissionDate" class="block text-sm font-medium text-gray-700">Admission Date</label>
+          <input 
+            type="date" 
+            id="admissionDate" 
+            v-model="form.admission_date" 
+            required
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+        </div>
+        
+        <div>
+          <label for="guardianName" class="block text-sm font-medium text-gray-700">Guardian Name</label>
+          <input type="text" id="guardianName" v-model="form.guardian_name" required
                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
         </div>
         
         <div>
-          <label for="department" class="block text-sm font-medium text-gray-700">
-            Department/Subject
-          </label>
+          <label for="guardianPhone" class="block text-sm font-medium text-gray-700">Guardian Phone</label>
+          <input 
+            type="text" 
+            id="guardianPhone" 
+            v-model="form.guardian_phone"
+            required
+            @blur="validateGuardianPhone"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            :class="{ 'border-red-500': guardianPhoneError }"
+          >
+          <p v-if="guardianPhoneError" class="text-red-500 text-xs mt-1">{{ guardianPhoneError }}</p>
+          <p class="text-gray-500 text-xs mt-1">Enter 10-digit mobile number (e.g., 9876543210)</p>
+        </div>
+        
+        <div>
+          <label for="guardianRelation" class="block text-sm font-medium text-gray-700">Guardian Relation</label>
           <select
-            id="department"
-            v-model="form.department"
+            id="guardianRelation"
+            v-model="form.guardian_relation"
+            required
             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 
                 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Select Department/Subject</option>
-            <option value="mathematics">Mathematics</option>
-            <option value="english">English</option>
-            <option value="science">Science</option>
-            <option value="physics">Physics</option>
-            <option value="chemistry">Chemistry</option>
-            <option value="biology">Biology</option>
-            <option value="history">History</option>
-            <option value="geography">Geography</option>
-            <option value="computer_science">Computer Science</option>
-            <option value="physical_education">Physical Education</option>
-            <option value="art">Art</option>
-            <option value="music">Music</option>
-            <option value="languages">Languages</option>
-            <option value="social_studies">Social Studies</option>
-            <option value="economics">Economics</option>
-            <option value="other">Other</option>
+            <option value="">Select Relation</option>
+            <option value="Father">Father</option>
+            <option value="Mother">Mother</option>
+            <option value="Grandfather">Grandfather</option>
+            <option value="Grandmother">Grandmother</option>
+            <option value="Uncle">Uncle</option>
+            <option value="Aunt">Aunt</option>
+            <option value="Brother">Brother</option>
+            <option value="Sister">Sister</option>
+            <option value="Guardian">Legal Guardian</option>
+            <option value="Other">Other</option>
           </select>
-        </div>
-        
-        <div>
-          <label for="qualification" class="block text-sm font-medium text-gray-700">
-            Qualification <span class="text-red-500">*</span>
-          </label>
-          <input 
-            type="text" 
-            id="qualification" 
-            v-model="form.qualification" 
-            required
-            placeholder="e.g., B.Ed, M.A Mathematics, B.Sc Physics"
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          >
-          <p class="text-gray-500 text-xs mt-1">Enter highest educational qualification</p>
-        </div>
-        
-        <div>
-          <label for="yearsOfExperience" class="block text-sm font-medium text-gray-700">
-            Years of Experience <span class="text-red-500">*</span>
-          </label>
-          <input 
-            type="number" 
-            id="yearsOfExperience" 
-            v-model.number="form.years_of_experience" 
-            required
-            min="0"
-            max="50"
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          >
-          <p class="text-gray-500 text-xs mt-1">Enter total years of teaching experience (0 for fresh graduates)</p>
         </div>
       </div>
 
+      <div>
+        <label for="addressLine1" class="block text-sm font-medium text-gray-700">Address</label>
+        <textarea 
+          id="addressLine1" 
+          v-model="form.address_line1" 
+          required
+          rows="3"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter complete address"
+        ></textarea>
+      </div>
+
       <p v-if="submitError" class="text-red-500 text-center">{{ submitError }}</p>
-      <p v-if="submitSuccess" class="text-green-500 text-center">Teacher added successfully!</p>
+      <p v-if="submitSuccess" class="text-green-500 text-center">Student added successfully!</p>
 
       <div class="flex justify-end pt-4">
         <button type="button" @click="router.back()"
@@ -151,7 +151,7 @@
         <button type="submit"
                 :disabled="!isFormValid"
                 class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-          Add Teacher
+          Add Student
         </button>
       </div>
     </form>
@@ -159,12 +159,18 @@
 </template>
 
 <script setup>
-import { ref, computed, h } from 'vue'
+import { ref, computed, h, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../api/axios'
+import api from '../../api/axios'
 import { toast } from 'vue3-toastify'
 
 const router = useRouter()
+
+// Get today's date in YYYY-MM-DD format
+const getTodayDate = () => {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
+}
 
 const form = ref({
   username: '',
@@ -172,11 +178,12 @@ const form = ref({
   password: '',
   first_name: '',
   last_name: '',
-  mobile_number: '',
-  city: '',
-  department: '',
-  qualification: '',
-  years_of_experience: 0
+  date_of_birth: '',
+  admission_date: getTodayDate(),
+  guardian_name: '',
+  address_line1: '',
+  guardian_phone: '',
+  guardian_relation: '',
 })
 
 const confirmPassword = ref('')
@@ -186,7 +193,8 @@ const submitSuccess = ref(false)
 // Validation error states
 const usernameError = ref('')
 const emailError = ref('')
-const phoneError = ref('')
+const guardianPhoneError = ref('')
+const dobError = ref('')
 
 // Validation functions
 const validateUsername = () => {
@@ -237,23 +245,49 @@ const validateEmail = () => {
   return true
 }
 
-const validatePhoneNumber = () => {
-  const phone = form.value.mobile_number.trim()
+const validateGuardianPhone = () => {
+  const phone = form.value.guardian_phone.trim()
   
-  // Phone is optional, so if empty, it's valid
   if (!phone) {
-    phoneError.value = ''
-    return true
+    guardianPhoneError.value = 'Guardian phone is required'
+    return false
   }
   
   // Indian mobile number format: 10 digits, starting with 6-9
   const phoneRegex = /^[6-9]\d{9}$/
   if (!phoneRegex.test(phone)) {
-    phoneError.value = 'Please enter a valid 10-digit mobile number starting with 6-9'
+    guardianPhoneError.value = 'Please enter a valid 10-digit mobile number starting with 6-9'
     return false
   }
   
-  phoneError.value = ''
+  guardianPhoneError.value = ''
+  return true
+}
+
+const validateDateOfBirth = () => {
+  const dob = form.value.date_of_birth
+  
+  if (!dob) {
+    dobError.value = 'Date of birth is required'
+    return false
+  }
+  
+  const dobDate = new Date(dob)
+  const today = new Date()
+  
+  if (dobDate >= today) {
+    dobError.value = 'Date of birth must be in the past'
+    return false
+  }
+  
+  // Check if age is reasonable (between 3 and 25 years)
+  const age = today.getFullYear() - dobDate.getFullYear()
+  if (age < 3 || age > 25) {
+    dobError.value = 'Please enter a valid date of birth (age should be between 3-25 years)'
+    return false
+  }
+  
+  dobError.value = ''
   return true
 }
 
@@ -266,38 +300,39 @@ const isFormValid = computed(() => {
   return !passwordMismatch.value && 
          !usernameError.value && 
          !emailError.value && 
-         !phoneError.value &&
+         !guardianPhoneError.value &&
+         !dobError.value &&
          form.value.username &&
          form.value.email &&
          form.value.password &&
          form.value.first_name &&
          form.value.last_name &&
-         form.value.qualification &&
-         (form.value.years_of_experience >= 0) &&
+         form.value.date_of_birth &&
+         form.value.admission_date &&
+         form.value.guardian_name &&
+         form.value.address_line1 &&
+         form.value.guardian_phone &&
+         form.value.guardian_relation &&
          confirmPassword.value
 })
 
-const addTeacher = async () => {
+const addStudent = async () => {
   submitError.value = ''
   submitSuccess.value = false
 
   // Run all validations before submitting
   const isUsernameValid = validateUsername()
   const isEmailValid = validateEmail()
-  const isPhoneValid = validatePhoneNumber()
+  const isGuardianPhoneValid = validateGuardianPhone()
+  const isDobValid = validateDateOfBirth()
 
-  if (!isUsernameValid || !isEmailValid || !isPhoneValid) {
+  if (!isUsernameValid || !isEmailValid || !isGuardianPhoneValid || !isDobValid) {
     submitError.value = 'Please fix the validation errors above'
     return
   }
 
   if (passwordMismatch.value) {
     submitError.value = 'Passwords do not match.'
-    return
-  }
-
-  if (!form.value.qualification.trim()) {
-    submitError.value = 'Qualification is required.'
     return
   }
 
@@ -308,21 +343,22 @@ const addTeacher = async () => {
       password: form.value.password,
       first_name: form.value.first_name,
       last_name: form.value.last_name,
-      mobile_number: form.value.mobile_number || null,
-      city: form.value.city || null,
-      department: form.value.department || null,
-      qualification: form.value.qualification,
-      years_of_experience: form.value.years_of_experience
+      date_of_birth: form.value.date_of_birth,
+      admission_date: form.value.admission_date,
+      guardian_name: form.value.guardian_name,
+      address_line1: form.value.address_line1,
+      guardian_phone: form.value.guardian_phone,
+      guardian_relation: form.value.guardian_relation
     }
 
-    const response = await api.post('/teacher/', payload)
-    console.log('Teacher added:', response.data)
+    const response = await api.post('student/', payload)
+    console.log('Student added:', response.data)
     submitSuccess.value = true
 
     // Reset form
     Object.keys(form.value).forEach(key => {
-      if (key === 'years_of_experience') {
-        form.value[key] = 0
+      if (key === 'admission_date') {
+        form.value[key] = getTodayDate()
       } else {
         form.value[key] = ''
       }
@@ -332,37 +368,22 @@ const addTeacher = async () => {
     // Reset validation errors
     usernameError.value = ''
     emailError.value = ''
-    phoneError.value = ''
+    guardianPhoneError.value = ''
+    dobError.value = ''
     
-    // Show success toast
-    toast.success('Teacher added successfully!', {
-      position: 'top-right',
-      timeout: 3000
-    })
-
-    // Navigate back to teachers list
     router.push({
-      path: '/principal/teachers',
+      path: '/principal/students',
       query: { success: 'true' }
     });
 
   } catch (error) {
-    console.error('Error adding teacher:', error)
-    if (error.response && error.response.data) {
-      // Handle different error response formats
-      if (error.response.data.detail) {
-        submitError.value = Array.isArray(error.response.data.detail)
-          ? error.response.data.detail.map(d => d.msg || d).join(', ')
-          : error.response.data.detail
-      } else if (error.response.data.message) {
-        submitError.value = error.response.data.message
-      } else if (typeof error.response.data === 'string') {
-        submitError.value = error.response.data
-      } else {
-        submitError.value = 'Failed to add teacher. Please check all fields and try again.'
-      }
+    console.error('Error adding student:', error)
+    if (error.response && error.response.data && error.response.data.detail) {
+      submitError.value = Array.isArray(error.response.data.detail)
+        ? error.response.data.detail.map(d => d.msg).join(', ')
+        : error.response.data.detail
     } else {
-      submitError.value = 'Failed to add teacher. Please try again.'
+      submitError.value = 'Failed to add student. Please try again.'
     }
   }
 }

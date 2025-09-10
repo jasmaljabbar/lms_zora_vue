@@ -9,16 +9,23 @@ import Principals from '@/components/Admin/Principals.vue';
 import Staffs from '@/components/Admin/Staffs.vue';
 import Teachers from '@/components/Admin/Teachers.vue';
 import Students from '@/components/Admin/Students.vue';
-import PrincipalDashboard from '@/components/PrincipalDashboard.vue';
-import PrincipalDashboardHome from '@/components/DashboardHome.vue';
-import principalStaff from '@/components/Staffs.vue'
-import AddStaff from '@/components/AddStaff.vue';
+import PrincipalDashboard from '@/components/Principal/PrincipalDashboard.vue';
+import PrincipalDashboardHome from '@/components/Principal/DashboardHome.vue';
+import principalStaff from '@/components/Principal/Staffs.vue'
+import AddStaff from '@/components/Principal/AddStaff.vue';
 import { RoleUtils } from '@/utils/roleUtils.js';
 import { toast } from 'vue3-toastify'
-import principalTeachers from '@/components/Teachers.vue';
-import AddTeacher from '@/components/AddTeacher.vue';
-import principalStudents from '@/components/Students.vue';
-import AddStudent from '@/components/AddStudent.vue';
+import principalTeachers from '@/components/Principal/Teachers.vue';
+import AddTeacher from '@/components/Principal/AddTeacher.vue';
+import principalStudents from '@/components/Principal/Students.vue';
+import AddStudent from '@/components/Principal/AddStudent.vue';
+import StaffDashboard from '@/components/StaffDashboard.vue';
+import StaffDAshboardHome from '@/components/DashboardHome.vue';
+import ClassSectionManagementVue from '@/components/ClassSectionManagement.vue.vue';
+import SubjectsManagement from '@/components/SubjectsManagement.vue';
+import TeacherManagement from '@/components/TeacherManagement.vue';
+import AcademicSessions from '@/components/AcademicSessions.vue';
+
 
 const routes = [
   {
@@ -121,6 +128,53 @@ const routes = [
     }
   ]
 },
+  {
+  path: '/staff',
+  component: StaffDashboard,
+  meta: { requiresAuth: true, requiresStaff: true },
+  children: [
+    {
+      path: 'dashboard',
+      name: 'StaffDashboardHome',
+      component: StaffDAshboardHome,
+    },
+    {
+      path: 'class_section',
+      name: 'staffClassSeciton',
+      component: ClassSectionManagementVue,
+    },
+    {
+      path: 'subjects',
+      name: 'staffSubject',
+      component: SubjectsManagement,
+    },
+    {
+      path: 'teachers',
+      name: 'StaffTeachers',
+      component: TeacherManagement,
+    },
+    {
+      path: 'teachers/add',
+      name: 'AddStaffTeacher',
+      component: AddTeacher,
+    },
+    {
+      path: 'academicsession',
+      name: 'staffAcademicSession',
+      component: AcademicSessions,
+    },
+    // {
+    //   path: 'students/add',
+    //   name: 'AddPrincipalStudent',
+    //   component: AddStudent,
+    // },
+    {
+      path: '',
+      name: 'StaffRedirect',
+      redirect: '/staff/dashboard'
+    }
+  ]
+},
 
   // Catch all route - redirect to appropriate dashboard or login
   {
@@ -136,6 +190,9 @@ const routes = [
         }
         if (user && user.roles && user.roles.includes('principal')) {
           return '/principal/dashboard';
+        }
+        if (user && user.roles && user.roles.includes('staff')) {
+          return '/staff/dashboard';
         }
       } catch (e) {
         console.error("Failed to parse user data", e);
@@ -201,6 +258,9 @@ function redirectToAppropriateDashboard(user) {
     }
     if (user.roles.includes('principal')) {
       return '/principal/dashboard';
+    }
+    if (user.roles.includes('staff')) {
+      return '/staff/dashboard';
     }
   }
   return '/';

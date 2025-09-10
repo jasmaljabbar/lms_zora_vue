@@ -158,14 +158,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api/axios';
+import api from '../../api/axios';
 
 // Import components
 import StaffForm from './StaffForm.vue';
 import StaffCard from './StaffCard.vue';
 import StaffTableRow from './StaffTableRow.vue';
 import StaffDetailsModal from './StaffDetailsModal.vue';
-import SearchAndFilters from './Admin/SearchAndFilters.vue';
+import SearchAndFilters from '../Admin/SearchAndFilters.vue';
 import DeleteConfirmation from './DeleteConfirmation.vue';
 import { toast } from 'vue3-toastify'
 import { useRoute } from 'vue-router';

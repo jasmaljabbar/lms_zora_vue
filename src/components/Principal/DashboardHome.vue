@@ -14,26 +14,26 @@
 
     <!-- Navigation Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-
+      <router-link 
+        to="/principal/dashboard" 
+        class="bg-blue-600 text-white p-4 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center"
+      >
+        <div class="text-center">
+          <i class="pi pi-chart-bar text-2xl mb-2"></i>
+          <p class="font-medium">Dashboard</p>
+        </div>
+      </router-link>
       
       <router-link 
-        to="/staff/class_section" 
+        to="/principal/staff" 
         class="bg-white p-4 rounded-lg shadow-md hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center border border-gray-200"
       >
         <div class="text-center">
-          <i class="pi pi-table text-2xl mb-2 text-gray-600"></i>
-          <p class="font-medium text-gray-700">Class & Section</p>
+          <i class="pi pi-users text-2xl mb-2 text-gray-600"></i>
+          <p class="font-medium text-gray-700">Staff Management</p>
         </div>
       </router-link>
-      <router-link 
-        to="/principal/teachers" 
-        class="bg-white p-4 rounded-lg shadow-md hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center border border-gray-200"
-      >
-        <div class="text-center">
-          <i class="pi pi-book text-2xl mb-2 text-gray-600"></i>
-          <p class="font-medium text-gray-700">Subject</p>
-        </div>
-      </router-link>
+      
       <router-link 
         to="/principal/teachers" 
         class="bg-white p-4 rounded-lg shadow-md hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center border border-gray-200"
@@ -56,7 +56,55 @@
     </div>
 
     <!-- Performance Analytics Section -->
-    
+    <div class="mb-8">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Performance Analytics</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <!-- Overall Performance Card -->
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="text-sm font-medium text-gray-600">Overall Performance</h4>
+            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">+45%</span>
+          </div>
+          <p class="text-2xl font-bold text-gray-900">85%</p>
+          <p class="text-xs text-gray-500 mt-1">2023 Performance</p>
+          <div class="mt-3 flex justify-between text-xs text-gray-500">
+            <span>Math</span>
+            <span>Science</span>
+            <span>English</span>
+          </div>
+        </div>
+
+        <!-- Attendance Rate Card -->
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="text-sm font-medium text-gray-600">Attendance Rate</h4>
+            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">+12%</span>
+          </div>
+          <p class="text-2xl font-bold text-gray-900">92%</p>
+          <p class="text-xs text-gray-500 mt-1">2023 Attendance</p>
+        </div>
+
+        <!-- Study of the Year Cards -->
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="text-sm font-medium text-gray-600">Study of the Year</h4>
+            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">+13%</span>
+          </div>
+          <p class="text-2xl font-bold text-gray-900">88%</p>
+          <p class="text-xs text-gray-500 mt-1">2023 Progress</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="text-sm font-medium text-gray-600">Study of the Year</h4>
+            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">+14%</span>
+          </div>
+          <p class="text-2xl font-bold text-gray-900">90%</p>
+          <p class="text-xs text-gray-500 mt-1">2023 Progress</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Teacher Performance Analysis Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

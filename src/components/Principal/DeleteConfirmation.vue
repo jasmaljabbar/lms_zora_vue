@@ -12,7 +12,7 @@
           <p class="text-sm text-gray-500">
             Are you sure you want to delete 
             <span class="font-semibold text-gray-700">
-              {{ staff?.first_name }} {{ item?.last_name }}
+              {{ item?.first_name }} {{ item?.last_name }}
             </span>?
           </p>
           <p class="text-sm text-gray-500 mt-1">

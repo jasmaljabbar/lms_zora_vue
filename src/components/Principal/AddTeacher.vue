@@ -1,8 +1,8 @@
 <template>
   <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Staff</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Teacher</h2>
 
-    <form @submit.prevent="addStaff" class="space-y-6">
+    <form @submit.prevent="addTeacher" class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
@@ -80,7 +80,7 @@
         
         <div>
           <label for="department" class="block text-sm font-medium text-gray-700">
-            Department
+            Department/Subject
           </label>
           <select
             id="department"
@@ -88,21 +88,60 @@
             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 
                 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Select Department</option>
-            <option value="administration">Administration</option>
-            <option value="support">Support</option>
-            <option value="maintenance">Maintenance</option>
-            <option value="library">Library</option>
-            <option value="sports">Sports</option>
-            <option value="medical">Medical</option>
-            <option value="transport">Transport</option>
+            <option value="">Select Department/Subject</option>
+            <option value="mathematics">Mathematics</option>
+            <option value="english">English</option>
+            <option value="science">Science</option>
+            <option value="physics">Physics</option>
+            <option value="chemistry">Chemistry</option>
+            <option value="biology">Biology</option>
+            <option value="history">History</option>
+            <option value="geography">Geography</option>
+            <option value="computer_science">Computer Science</option>
+            <option value="physical_education">Physical Education</option>
+            <option value="art">Art</option>
+            <option value="music">Music</option>
+            <option value="languages">Languages</option>
+            <option value="social_studies">Social Studies</option>
+            <option value="economics">Economics</option>
             <option value="other">Other</option>
           </select>
+        </div>
+        
+        <div>
+          <label for="qualification" class="block text-sm font-medium text-gray-700">
+            Qualification <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="qualification" 
+            v-model="form.qualification" 
+            required
+            placeholder="e.g., B.Ed, M.A Mathematics, B.Sc Physics"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+          <p class="text-gray-500 text-xs mt-1">Enter highest educational qualification</p>
+        </div>
+        
+        <div>
+          <label for="yearsOfExperience" class="block text-sm font-medium text-gray-700">
+            Years of Experience <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="number" 
+            id="yearsOfExperience" 
+            v-model.number="form.years_of_experience" 
+            required
+            min="0"
+            max="50"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+          <p class="text-gray-500 text-xs mt-1">Enter total years of teaching experience (0 for fresh graduates)</p>
         </div>
       </div>
 
       <p v-if="submitError" class="text-red-500 text-center">{{ submitError }}</p>
-      <p v-if="submitSuccess" class="text-green-500 text-center">Staff added successfully!</p>
+      <p v-if="submitSuccess" class="text-green-500 text-center">Teacher added successfully!</p>
 
       <div class="flex justify-end pt-4">
         <button type="button" @click="router.back()"
@@ -112,7 +151,7 @@
         <button type="submit"
                 :disabled="!isFormValid"
                 class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-          Add Staff
+          Add Teacher
         </button>
       </div>
     </form>
@@ -122,7 +161,7 @@
 <script setup>
 import { ref, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../api/axios'
+import api from '../../api/axios'
 import { toast } from 'vue3-toastify'
 
 const router = useRouter()
@@ -136,6 +175,8 @@ const form = ref({
   mobile_number: '',
   city: '',
   department: '',
+  qualification: '',
+  years_of_experience: 0
 })
 
 const confirmPassword = ref('')
@@ -231,10 +272,12 @@ const isFormValid = computed(() => {
          form.value.password &&
          form.value.first_name &&
          form.value.last_name &&
+         form.value.qualification &&
+         (form.value.years_of_experience >= 0) &&
          confirmPassword.value
 })
 
-const addStaff = async () => {
+const addTeacher = async () => {
   submitError.value = ''
   submitSuccess.value = false
 
@@ -253,6 +296,11 @@ const addStaff = async () => {
     return
   }
 
+  if (!form.value.qualification.trim()) {
+    submitError.value = 'Qualification is required.'
+    return
+  }
+
   try {
     const payload = {
       username: form.value.username,
@@ -263,15 +311,22 @@ const addStaff = async () => {
       mobile_number: form.value.mobile_number || null,
       city: form.value.city || null,
       department: form.value.department || null,
-      hire_date: new Date().toISOString().slice(0, 19) 
+      qualification: form.value.qualification,
+      years_of_experience: form.value.years_of_experience
     }
 
-    const response = await api.post('http://127.0.0.1:8001/staff/', payload)
-    console.log('Staff added:', response.data)
+    const response = await api.post('/teacher/', payload)
+    console.log('Teacher added:', response.data)
     submitSuccess.value = true
 
     // Reset form
-    Object.keys(form.value).forEach(key => (form.value[key] = ''))
+    Object.keys(form.value).forEach(key => {
+      if (key === 'years_of_experience') {
+        form.value[key] = 0
+      } else {
+        form.value[key] = ''
+      }
+    })
     confirmPassword.value = ''
     
     // Reset validation errors
@@ -279,19 +334,35 @@ const addStaff = async () => {
     emailError.value = ''
     phoneError.value = ''
     
+    // Show success toast
+    toast.success('Teacher added successfully!', {
+      position: 'top-right',
+      timeout: 3000
+    })
+
+    // Navigate back to teachers list
     router.push({
-      path: '/principal/staff',
+      path: '/principal/teachers',
       query: { success: 'true' }
     });
 
   } catch (error) {
-    console.error('Error adding staff:', error)
-    if (error.response && error.response.data && error.response.data.detail) {
-      submitError.value = Array.isArray(error.response.data.detail)
-        ? error.response.data.detail.map(d => d.msg).join(', ')
-        : error.response.data.detail
+    console.error('Error adding teacher:', error)
+    if (error.response && error.response.data) {
+      // Handle different error response formats
+      if (error.response.data.detail) {
+        submitError.value = Array.isArray(error.response.data.detail)
+          ? error.response.data.detail.map(d => d.msg || d).join(', ')
+          : error.response.data.detail
+      } else if (error.response.data.message) {
+        submitError.value = error.response.data.message
+      } else if (typeof error.response.data === 'string') {
+        submitError.value = error.response.data
+      } else {
+        submitError.value = 'Failed to add teacher. Please check all fields and try again.'
+      }
     } else {
-      submitError.value = 'Failed to add staff. Please try again.'
+      submitError.value = 'Failed to add teacher. Please try again.'
     }
   }
 }

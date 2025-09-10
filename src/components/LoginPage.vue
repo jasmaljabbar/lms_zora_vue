@@ -2,14 +2,14 @@
   <div class="min-h-screen bg-gray-100">
     <!-- Logo at top center -->
     <div class="flex justify-center pt-8 pb-6">
-      <img src="F:\Vue_LMS\zora_LMS\src\assets\images\image.png" alt="Zora AI Logo" class="h-16 md:h-20 lg:h-24">
+      <img :src="ZoraImage" alt="Zora AI Logo" class="h-16 md:h-20 lg:h-24">
     </div>
 
     <!-- Main content container -->
     <div class="flex flex-col lg:flex-row mx-4 md:mx-8 lg:mx-auto lg:max-w-7xl rounded-lg overflow-hidden">
       <!-- Left Section: Illustration -->
       <div class="w-full lg:w-1/2 p-6 md:p-8 flex justify-center items-center bg-gray-100 order-2 lg:order-1">
-        <img src="F:\Vue_LMS\zora_LMS\src\assets\images\loginimg.png" alt="Students Illustration" class="max-w-full h-auto rounded-lg max-h-64 md:max-h-80 lg:max-h-full">
+        <img :src="zoraLogo" alt="Students Illustration" class="max-w-full h-auto rounded-lg max-h-64 md:max-h-80 lg:max-h-full">
       </div>
 
       <!-- Right Section: Login Form -->
@@ -110,6 +110,8 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import {jwtDecode} from "jwt-decode";
 import { useRouter } from 'vue-router';
+import ZoraImage from '@/assets/images/image.png';
+import zoraLogo from '@/assets/images/loginimg.png'
 
 // Reactive state for form inputs
 const username = ref('');
@@ -137,6 +139,8 @@ const saveToken = (token) => {
     router.push('/admin/dashboard');
   } else if (decoded.roles && decoded.roles.includes("principal")) {
     router.push('/principal/dashboard');
+  } else if (decoded.roles && decoded.roles.includes("staff")) {
+    router.push('/staff/dashboard');
   } else {
     router.push('/dashboard'); // Default redirect if no specific role
   }

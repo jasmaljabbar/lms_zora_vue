@@ -155,7 +155,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api/axios';
+import api from '../../api/axios';
 
 
 // Import components
@@ -163,7 +163,7 @@ import TeacherForm from './TeacherForm.vue';
 import TeacherCard from './TeacherCard.vue';
 import TeacherTableRow from './TeacherTableRow.vue';
 import TeacherDetailsModal from './TeacherDetailsModal.vue';
-import SearchAndFilters from './Admin/SearchAndFilters.vue';
+import SearchAndFilters from '../Admin/SearchAndFilters.vue';
 import DeleteConfirmation from './DeleteConfirmation.vue';
 import { toast } from 'vue3-toastify'
 import { useRoute } from 'vue-router';

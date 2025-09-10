@@ -46,7 +46,7 @@
             {{ searchQuery ? 'No students found matching your search' : 'No students found' }}
           </p>
           <p class="text-sm text-gray-400">
-            {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first teacher to get started' }}
+            {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first student to get started' }}
           </p>
         </div>
 
@@ -100,7 +100,7 @@
                     {{ searchQuery ? 'No students found matching your search' : 'No students found' }}
                   </p>
                   <p class="text-sm text-gray-400">
-                    {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first teacher to get started' }}
+                    {{ searchQuery ? 'Try adjusting your search terms' : 'Add your first student to get started' }}
                   </p>
                 </td>
               </tr>
@@ -143,10 +143,10 @@
     <DeleteConfirmation
       v-if="showDeleteModal"
       :show="showDeleteModal"
-      :item="teacherToDelete"
+      :item="studentToDelete"
       :loading="deleting"
-      item_type="teacher"
-      @confirm="deleteTeacher"
+      item_type="student"
+      @confirm="deleteStudent"
       @cancel="cancelDelete"
     />
   </div>
@@ -155,7 +155,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api/axios';
+import api from '../../api/axios';
 
 
 // Import components
@@ -163,7 +163,7 @@ import StudentForm from './StudentForm.vue';
 import StudentCard from './StudentCard.vue';
 import StudentTableRow from './StudentTableRow.vue';
 import StudentDetailsModal from './StudentDetailsModal.vue';
-import SearchAndFilters from './Admin/SearchAndFilters.vue';
+import SearchAndFilters from '../Admin/SearchAndFilters.vue';
 import DeleteConfirmation from './DeleteConfirmation.vue';
 import { toast } from 'vue3-toastify'
 import { useRoute } from 'vue-router';
@@ -175,7 +175,7 @@ const selectedFilter = ref('all');
 const loading = ref(false);
 const updating = ref(false);
 const deleting = ref(false);
-const searchItem = ref('teacher');
+const searchItem = ref('student');
 
 const route = useRoute();
 onMounted(() => {
@@ -218,7 +218,7 @@ const studentToEdit = ref(null);
 
 // Delete Modal
 const showDeleteModal = ref(false);
-const teacherToDelete = ref(null);
+const studentToDelete = ref(null);
 
 // Computed property for filtered students
 const filteredStudents = computed(() => {
@@ -230,7 +230,7 @@ const filteredStudents = computed(() => {
     filtered = filtered.filter(student => 
       student.first_name?.toLowerCase().includes(query) ||
       student.last_name?.toLowerCase().includes(query) ||
-      student.teacher_id?.toLowerCase().includes(query) ||
+      student.user_id?.toLowerCase().includes(query) ||
       student.department?.toLowerCase().includes(query) ||
       student.subjects?.toLowerCase().includes(query)
     );
@@ -344,7 +344,7 @@ const updateStudent = async () => {
   try {
     const response = await api.put(`/studentStaff_profiles/${studentToEdit.value.user_id}/`, editForm.value);
     
-    // Update the teacher in the local array
+    // Update the student in the local array
     const index = students.value.findIndex(t => t.user_id === studentToEdit.value.user_id);
     if (index !== -1) {
       students.value[index] = {
@@ -354,15 +354,15 @@ const updateStudent = async () => {
     }
     
     closeEditModal();
-    toast.success("Teacher updated successfully!");
+    toast.success("Student updated successfully!");
   
   } catch (error) {
-    console.error('Error updating teacher:', error);
+    console.error('Error updating student:', error);
     if (error.response && error.response.data) {
       errors.value = error.response.data;
-      toast.error('Failed to update teacher');
+      toast.error('Failed to update student');
     } else {
-      toast.error('An error occurred while updating teacher');
+      toast.error('An error occurred while updating student');
     }
   } finally {
     updating.value = false;
@@ -370,29 +370,29 @@ const updateStudent = async () => {
 };
 
 // Delete Modal Functions
-const confirmDelete = (teacher) => {
-  teacherToDelete.value = teacher;
+const confirmDelete = (student) => {
+  studentToDelete.value = student;
   showDeleteModal.value = true;
   // Close details modal if open
   showDetailsModal.value = false;
 };
 
-const deleteTeacher = async () => {
-  if (!teacherToDelete.value) return;
+const deleteStudent = async () => {
+  if (!studentToDelete.value) return;
   
   deleting.value = true;
   try {
-    await api.delete(`/teacher_profiles_staff/${teacherToDelete.value.user_id}/`);
+    await api.delete(`/studentStaff_profiles/${studentToDelete.value.user_id}/`);
     
     // Remove from local array
-    students.value = students.value.filter(t => t.user_id !== teacherToDelete.value.user_id);
+    students.value = students.value.filter(t => t.user_id !== studentToDelete.value.user_id);
     
     showDeleteModal.value = false;
-    teacherToDelete.value = null;
-    toast.success("Teacher deleted successfully!");
+    studentToDelete.value = null;
+    toast.success("Student deleted successfully!");
   } catch (error) {
-    console.error('Error deleting teacher:', error);
-    toast.error('Failed to delete teacher');
+    console.error('Error deleting student:', error);
+    toast.error('Failed to delete student');
   } finally {
     deleting.value = false;
   }
@@ -400,7 +400,7 @@ const deleteTeacher = async () => {
 
 const cancelDelete = () => {
   showDeleteModal.value = false;
-  teacherToDelete.value = null;
+  studentToDelete.value = null;
 };
 
 onMounted(() => {

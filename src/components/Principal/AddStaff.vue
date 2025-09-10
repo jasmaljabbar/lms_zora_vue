@@ -1,8 +1,8 @@
 <template>
   <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Student</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Staff</h2>
 
-    <form @submit.prevent="addStudent" class="space-y-6">
+    <form @submit.prevent="addStaff" class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
@@ -59,89 +59,50 @@
         </div>
         
         <div>
-          <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
-          <input 
-            type="date" 
-            id="dateOfBirth" 
-            v-model="form.date_of_birth" 
-            required
-            @blur="validateDateOfBirth"
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': dobError }"
-          >
-          <p v-if="dobError" class="text-red-500 text-xs mt-1">{{ dobError }}</p>
-        </div>
-        
-        <div>
-          <label for="admissionDate" class="block text-sm font-medium text-gray-700">Admission Date</label>
-          <input 
-            type="date" 
-            id="admissionDate" 
-            v-model="form.admission_date" 
-            required
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          >
-        </div>
-        
-        <div>
-          <label for="guardianName" class="block text-sm font-medium text-gray-700">Guardian Name</label>
-          <input type="text" id="guardianName" v-model="form.guardian_name" required
-                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        </div>
-        
-        <div>
-          <label for="guardianPhone" class="block text-sm font-medium text-gray-700">Guardian Phone</label>
+          <label for="mobileNumber" class="block text-sm font-medium text-gray-700">Mobile Number</label>
           <input 
             type="text" 
-            id="guardianPhone" 
-            v-model="form.guardian_phone"
-            required
-            @blur="validateGuardianPhone"
+            id="mobileNumber" 
+            v-model="form.mobile_number"
+            @blur="validatePhoneNumber"
             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': guardianPhoneError }"
+            :class="{ 'border-red-500': phoneError }"
           >
-          <p v-if="guardianPhoneError" class="text-red-500 text-xs mt-1">{{ guardianPhoneError }}</p>
+          <p v-if="phoneError" class="text-red-500 text-xs mt-1">{{ phoneError }}</p>
           <p class="text-gray-500 text-xs mt-1">Enter 10-digit mobile number (e.g., 9876543210)</p>
         </div>
         
         <div>
-          <label for="guardianRelation" class="block text-sm font-medium text-gray-700">Guardian Relation</label>
+          <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+          <input type="text" id="city" v-model="form.city"
+                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div>
+          <label for="department" class="block text-sm font-medium text-gray-700">
+            Department
+          </label>
           <select
-            id="guardianRelation"
-            v-model="form.guardian_relation"
-            required
+            id="department"
+            v-model="form.department"
             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 
                 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Select Relation</option>
-            <option value="Father">Father</option>
-            <option value="Mother">Mother</option>
-            <option value="Grandfather">Grandfather</option>
-            <option value="Grandmother">Grandmother</option>
-            <option value="Uncle">Uncle</option>
-            <option value="Aunt">Aunt</option>
-            <option value="Brother">Brother</option>
-            <option value="Sister">Sister</option>
-            <option value="Guardian">Legal Guardian</option>
-            <option value="Other">Other</option>
+            <option value="">Select Department</option>
+            <option value="administration">Administration</option>
+            <option value="support">Support</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="library">Library</option>
+            <option value="sports">Sports</option>
+            <option value="medical">Medical</option>
+            <option value="transport">Transport</option>
+            <option value="other">Other</option>
           </select>
         </div>
       </div>
 
-      <div>
-        <label for="addressLine1" class="block text-sm font-medium text-gray-700">Address</label>
-        <textarea 
-          id="addressLine1" 
-          v-model="form.address_line1" 
-          required
-          rows="3"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter complete address"
-        ></textarea>
-      </div>
-
       <p v-if="submitError" class="text-red-500 text-center">{{ submitError }}</p>
-      <p v-if="submitSuccess" class="text-green-500 text-center">Student added successfully!</p>
+      <p v-if="submitSuccess" class="text-green-500 text-center">Staff added successfully!</p>
 
       <div class="flex justify-end pt-4">
         <button type="button" @click="router.back()"
@@ -151,7 +112,7 @@
         <button type="submit"
                 :disabled="!isFormValid"
                 class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-          Add Student
+          Add Staff
         </button>
       </div>
     </form>
@@ -159,18 +120,12 @@
 </template>
 
 <script setup>
-import { ref, computed, h, onMounted } from 'vue'
+import { ref, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../api/axios'
+import api from '../../api/axios'
 import { toast } from 'vue3-toastify'
 
 const router = useRouter()
-
-// Get today's date in YYYY-MM-DD format
-const getTodayDate = () => {
-  const today = new Date()
-  return today.toISOString().split('T')[0]
-}
 
 const form = ref({
   username: '',
@@ -178,12 +133,9 @@ const form = ref({
   password: '',
   first_name: '',
   last_name: '',
-  date_of_birth: '',
-  admission_date: getTodayDate(),
-  guardian_name: '',
-  address_line1: '',
-  guardian_phone: '',
-  guardian_relation: '',
+  mobile_number: '',
+  city: '',
+  department: '',
 })
 
 const confirmPassword = ref('')
@@ -193,8 +145,7 @@ const submitSuccess = ref(false)
 // Validation error states
 const usernameError = ref('')
 const emailError = ref('')
-const guardianPhoneError = ref('')
-const dobError = ref('')
+const phoneError = ref('')
 
 // Validation functions
 const validateUsername = () => {
@@ -245,49 +196,23 @@ const validateEmail = () => {
   return true
 }
 
-const validateGuardianPhone = () => {
-  const phone = form.value.guardian_phone.trim()
+const validatePhoneNumber = () => {
+  const phone = form.value.mobile_number.trim()
   
+  // Phone is optional, so if empty, it's valid
   if (!phone) {
-    guardianPhoneError.value = 'Guardian phone is required'
-    return false
+    phoneError.value = ''
+    return true
   }
   
   // Indian mobile number format: 10 digits, starting with 6-9
   const phoneRegex = /^[6-9]\d{9}$/
   if (!phoneRegex.test(phone)) {
-    guardianPhoneError.value = 'Please enter a valid 10-digit mobile number starting with 6-9'
+    phoneError.value = 'Please enter a valid 10-digit mobile number starting with 6-9'
     return false
   }
   
-  guardianPhoneError.value = ''
-  return true
-}
-
-const validateDateOfBirth = () => {
-  const dob = form.value.date_of_birth
-  
-  if (!dob) {
-    dobError.value = 'Date of birth is required'
-    return false
-  }
-  
-  const dobDate = new Date(dob)
-  const today = new Date()
-  
-  if (dobDate >= today) {
-    dobError.value = 'Date of birth must be in the past'
-    return false
-  }
-  
-  // Check if age is reasonable (between 3 and 25 years)
-  const age = today.getFullYear() - dobDate.getFullYear()
-  if (age < 3 || age > 25) {
-    dobError.value = 'Please enter a valid date of birth (age should be between 3-25 years)'
-    return false
-  }
-  
-  dobError.value = ''
+  phoneError.value = ''
   return true
 }
 
@@ -300,33 +225,25 @@ const isFormValid = computed(() => {
   return !passwordMismatch.value && 
          !usernameError.value && 
          !emailError.value && 
-         !guardianPhoneError.value &&
-         !dobError.value &&
+         !phoneError.value &&
          form.value.username &&
          form.value.email &&
          form.value.password &&
          form.value.first_name &&
          form.value.last_name &&
-         form.value.date_of_birth &&
-         form.value.admission_date &&
-         form.value.guardian_name &&
-         form.value.address_line1 &&
-         form.value.guardian_phone &&
-         form.value.guardian_relation &&
          confirmPassword.value
 })
 
-const addStudent = async () => {
+const addStaff = async () => {
   submitError.value = ''
   submitSuccess.value = false
 
   // Run all validations before submitting
   const isUsernameValid = validateUsername()
   const isEmailValid = validateEmail()
-  const isGuardianPhoneValid = validateGuardianPhone()
-  const isDobValid = validateDateOfBirth()
+  const isPhoneValid = validatePhoneNumber()
 
-  if (!isUsernameValid || !isEmailValid || !isGuardianPhoneValid || !isDobValid) {
+  if (!isUsernameValid || !isEmailValid || !isPhoneValid) {
     submitError.value = 'Please fix the validation errors above'
     return
   }
@@ -343,47 +260,38 @@ const addStudent = async () => {
       password: form.value.password,
       first_name: form.value.first_name,
       last_name: form.value.last_name,
-      date_of_birth: form.value.date_of_birth,
-      admission_date: form.value.admission_date,
-      guardian_name: form.value.guardian_name,
-      address_line1: form.value.address_line1,
-      guardian_phone: form.value.guardian_phone,
-      guardian_relation: form.value.guardian_relation
+      mobile_number: form.value.mobile_number || null,
+      city: form.value.city || null,
+      department: form.value.department || null,
+      hire_date: new Date().toISOString().slice(0, 19) 
     }
 
-    const response = await api.post('student/', payload)
-    console.log('Student added:', response.data)
+    const response = await api.post('staff/', payload)
+    console.log('Staff added:', response.data)
     submitSuccess.value = true
 
     // Reset form
-    Object.keys(form.value).forEach(key => {
-      if (key === 'admission_date') {
-        form.value[key] = getTodayDate()
-      } else {
-        form.value[key] = ''
-      }
-    })
+    Object.keys(form.value).forEach(key => (form.value[key] = ''))
     confirmPassword.value = ''
     
     // Reset validation errors
     usernameError.value = ''
     emailError.value = ''
-    guardianPhoneError.value = ''
-    dobError.value = ''
+    phoneError.value = ''
     
     router.push({
-      path: '/principal/students',
+      path: '/principal/staff',
       query: { success: 'true' }
     });
 
   } catch (error) {
-    console.error('Error adding student:', error)
+    console.error('Error adding staff:', error)
     if (error.response && error.response.data && error.response.data.detail) {
       submitError.value = Array.isArray(error.response.data.detail)
         ? error.response.data.detail.map(d => d.msg).join(', ')
         : error.response.data.detail
     } else {
-      submitError.value = 'Failed to add student. Please try again.'
+      submitError.value = 'Failed to add staff. Please try again.'
     }
   }
 }
