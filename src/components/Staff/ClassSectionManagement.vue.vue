@@ -304,7 +304,7 @@ import { toast } from 'vue3-toastify';
 import ClassModal from './ClassModal.vue';
 import SectionModal from './SectionModal.vue';
 import SectionBulkModal from './SectionBulkModal.vue';
-import DeleteConfirmation from './Admin/DeleteConfirmation.vue';
+import DeleteConfirmation from '../Admin/DeleteConfirmation.vue';
 
 // Data
 const classes = ref([]);

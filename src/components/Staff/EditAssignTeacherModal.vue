@@ -1,4 +1,4 @@
-<!-- src/components/AssignTeacherModal.vue -->
+<!-- src/components/EditAssignTeacherModal.vue -->
 <template>
   <div
     v-if="show"
@@ -7,7 +7,7 @@
     <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-        <h3 class="text-lg font-medium text-gray-900">Assign Teacher to Subject</h3>
+        <h3 class="text-lg font-medium text-gray-900">Edit Teacher Assignment</h3>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600">
           <i class="pi pi-times text-xl"></i>
         </button>
@@ -15,6 +15,29 @@
 
       <!-- Form -->
       <form @submit.prevent="handleSubmit" class="mt-4 space-y-4">
+        <!-- Current Assignment Info (Read-only) -->
+        <div class="bg-gray-50 p-4 rounded-md">
+          <h4 class="text-sm font-medium text-gray-700 mb-2">Current Assignment</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="font-medium">Subject:</span>
+              <span class="ml-2">{{ assignTeacher.subject_name }}</span>
+            </div>
+            <div>
+              <span class="font-medium">Class:</span>
+              <span class="ml-2">{{ assignTeacher.class_name }}</span>
+            </div>
+            <div>
+              <span class="font-medium">Section:</span>
+              <span class="ml-2">{{ assignTeacher.section_name }}</span>
+            </div>
+            <div>
+              <span class="font-medium">Academic Session:</span>
+              <span class="ml-2">{{ assignTeacher.academic_session_name || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Class Selection -->
         <div>
           <label for="class" class="block text-sm font-medium text-gray-700">Select Class *</label>
@@ -124,9 +147,9 @@
             class="px-4 py-2 text-sm text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="loading">
-              <i class="pi pi-spinner pi-spin mr-1"></i> Assigning...
+              <i class="pi pi-spinner pi-spin mr-1"></i> Updating...
             </span>
-            <span v-else>Assign Teacher</span>
+            <span v-else>Update Assignment</span>
           </button>
         </div>
       </form>
@@ -136,12 +159,12 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import {api,accapi} from '../api/axios';
+import {api,accapi} from '../../api/axios';
 import { toast } from 'vue3-toastify';
 
 const props = defineProps({
   show: Boolean,
-  teacherId: Number,
+  assignTeacher: Object,
   loading: Boolean
 });
 
@@ -195,9 +218,8 @@ const fetchSections = async (classId) => {
   loadingSections.value = true;
   try {
     const response = await accapi.get(`/classes/${classId}/sections/`);
+    
     sections.value = response.data;
-    // Reset section selection
-    selectedSectionId.value = '';
   } catch (error) {
     console.error('Error fetching sections:', error);
     toast.error('Failed to load sections for this class');
@@ -215,12 +237,8 @@ const fetchSubjects = async (classId) => {
   
   loadingSubjects.value = true;
   try {
-    // Assuming you have an endpoint to get subjects by class
-    // If not, you might need to adjust this
     const response = await accapi.get(`/classes/${classId}/subjects`);
     subjects.value = response.data;
-    // Reset subject selection
-    selectedSubjectId.value = '';
   } catch (error) {
     console.error('Error fetching subjects:', error);
     toast.error('Failed to load subjects for this class');
@@ -235,11 +253,6 @@ const fetchAcademicSessions = async () => {
   try {
     const response = await accapi.get('/academic-sessions/');
     academicSessions.value = response.data;
-    // Set default to current academic session if available
-    const currentSession = academicSessions.value.find(session => session.is_current);
-    if (currentSession) {
-      selectedAcademicSessionId.value = currentSession.id;
-    }
   } catch (error) {
     console.error('Error fetching academic sessions:', error);
     toast.error('Failed to load academic sessions');
@@ -261,16 +274,33 @@ const fetchSectionsAndSubjects = () => {
 };
 
 const handleSubmit = () => {
-  if (!isFormValid.value) return;
+  if (!isFormValid.value || !props.assignTeacher) return;
 
   emit('submit', {
-    teacher_id: props.teacherId,
+    id: props.assignTeacher.id,
+    teacher_id: props.assignTeacher.teacher_id,
     class_id: selectedClassId.value,
     section_id: selectedSectionId.value,
     subject_id: selectedSubjectId.value,
     academic_session_id: selectedAcademicSessionId.value,
     is_active: isActive.value
   });
+};
+
+const initializeForm = () => {
+  if (props.assignTeacher) {
+    selectedClassId.value = props.assignTeacher.class_id || '';
+    selectedSectionId.value = props.assignTeacher.section_id || '';
+    selectedSubjectId.value = props.assignTeacher.subject_id || '';
+    selectedAcademicSessionId.value = props.assignTeacher.academic_session_id || '';
+    isActive.value = props.assignTeacher.is_active !== undefined ? props.assignTeacher.is_active : true;
+    
+    // Fetch sections and subjects for the selected class
+    if (selectedClassId.value) {
+      fetchSections(selectedClassId.value);
+      fetchSubjects(selectedClassId.value);
+    }
+  }
 };
 
 const resetForm = () => {
@@ -283,18 +313,30 @@ const resetForm = () => {
   subjects.value = [];
 };
 
-// Watch for modal show/hide
+// Watch for modal show/hide and assignment changes
 watch(() => props.show, (newVal) => {
+  console.log('Modal show changed:', newVal);
+  console.log('Assignment data:', props.assignment);
   if (newVal) {
-    resetForm();
     if (classes.value.length === 0) {
       fetchClasses();
     }
     if (academicSessions.value.length === 0) {
       fetchAcademicSessions();
     }
+    // Initialize form with current assignment data
+    initializeForm();
+  } else {
+    resetForm();
   }
 });
+
+watch(() => props.assignment, (newVal) => {
+  console.log('Assignment prop changed:', newVal);
+  if (newVal && props.show) {
+    initializeForm();
+  }
+}, { deep: true });
 
 onMounted(() => {
   fetchClasses();

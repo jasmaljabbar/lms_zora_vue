@@ -1,26 +1,29 @@
-<!-- src/components/AdminDashboard.vue -->
+<!-- src/components/TeacherDashboard.vue -->
 <template>
   <div class="flex min-h-screen bg-gray-100">
     <!-- Mobile Overlay -->
     <div 
       v-if="isMobileMenuOpen" 
       @click="toggleMobileMenu"
-      class="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
+      class="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden"
     ></div>
 
     <!-- Sidebar -->
-    <aside :class="[
-      'fixed inset-y-0 left-0 w-64 bg-white shadow-lg p-4 sm:p-6 flex flex-col z-40 transform transition-transform duration-300 ease-in-out',
-      isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-    ]">
-      <!-- Logo and Close Button -->
+    <aside
+      :class="[
+        'fixed inset-y-0 left-0 w-64 bg-white shadow-lg p-4 sm:p-6 flex flex-col z-40 transform transition-transform duration-300 ease-in-out',
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      ]"
+    >
+      <!-- Logo with Mobile Close Button -->
       <div class="flex items-center justify-between mb-6 lg:mb-10">
-        <span class="text-xl sm:text-2xl font-bold text-gray-800">LMS Admin</span>
-        <button 
+        <span class="text-xl sm:text-2xl font-bold text-gray-800">LMS Teacher</span>
+        <!-- Mobile Close Button -->
+        <button
           @click="toggleMobileMenu"
           class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100"
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
@@ -31,74 +34,74 @@
         <ul class="space-y-1 sm:space-y-2">
           <li>
             <router-link 
-              to="/admin/dashboard" 
+              to="/teacher/dashboard"
               @click="closeMobileMenuOnNavigate"
               class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
             >
-              <i class="pi pi-th-large mr-2 sm:mr-3 text-base sm:text-lg"></i>
-              <span>Dashboard</span>
+              <i class="pi pi-th-large mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0"></i>
+              <span class="truncate">Dashboard</span>
             </router-link>
           </li>
           <li>
             <router-link 
-              to="/admin/schools" 
+              to="/teacher/subject"
               @click="closeMobileMenuOnNavigate"
               class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
             >
-              <i class="pi pi-building mr-2 sm:mr-3 text-base sm:text-lg"></i>
-              <span>Schools</span>
+              <i class="pi pi-book mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0"></i>
+              <span class="truncate">Subject</span>
             </router-link>
           </li>
           <li>
             <router-link 
-              to="/admin/principals" 
+              to="/staff/subjects"
               @click="closeMobileMenuOnNavigate"
               class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
             >
-              <i class="pi pi-user-plus mr-2 sm:mr-3 text-base sm:text-lg"></i>
-              <span>Principals</span>
+              <i class="pi pi-file-edit mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0"></i>
+              <span class="truncate">My Lesson Plan</span>
             </router-link>
           </li>
           <li>
             <router-link 
-              to="/admin/staff" 
+              to="/staff/teachers"
               @click="closeMobileMenuOnNavigate"
               class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
             >
-              <i class="pi pi-users mr-2 sm:mr-3 text-base sm:text-lg"></i>
-              <span>Staff</span>
+              <i class="pi pi-chart-bar mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0"></i>
+              <span class="truncate">Manage Assessment</span>
             </router-link>
           </li>
           <li>
             <router-link 
-              to="/admin/teachers" 
+              to="/staff/students"
               @click="closeMobileMenuOnNavigate"
               class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
             >
-              <i class="pi pi-id-card mr-2 sm:mr-3 text-base sm:text-lg"></i>
-              <span>Teachers</span>
+              <i class="pi pi-users mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0"></i>
+              <span class="truncate">Manage Assignments</span>
             </router-link>
           </li>
           <li>
             <router-link 
-              to="/admin/students" 
+              to="/staff/academicsession"
               @click="closeMobileMenuOnNavigate"
               class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
             >
-              <i class="pi pi-user   mr-2 sm:mr-3 text-base sm:text-lg"></i>
-              <span>Students</span>
+              <i class="pi pi-stopwatch mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0"></i>
+              <span class="truncate">Schedule</span>
             </router-link>
           </li>
         </ul>
       </nav>
 
-      <!-- Logout Button -->
+      <!-- Logout -->
       <button 
-        @click="logout" 
-        class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 mt-4"
+        @click="logout"
+        class="flex items-center w-full p-2 sm:p-3 text-sm sm:text-base text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 mt-4"
       >
-        <i class="pi pi-sign-out mr-2 sm:mr-3 text-base sm:text-lg"></i>
-        <span>Logout</span>
+        <i class="pi pi-sign-out mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0"></i>
+        <span class="truncate">Logout</span>
       </button>
     </aside>
 
@@ -201,15 +204,45 @@ onUnmounted(() => {
 <style scoped>
 /* Active link styles */
 .router-link-active {
-  background-color: #ebf8ff; /* A light blue for active link */
-  color: #2563eb; /* Primary blue for active link text */
+  background-color: #ebf8ff;
+  color: #2563eb;
   font-weight: 600;
 }
 
-/* Ensure sidebar doesn't interfere with main content on mobile */
+/* Smooth transitions for mobile menu */
+.transform {
+  transform: translateX(var(--tw-translate-x)) translateY(var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+/* Ensure proper stacking and positioning */
 @media (max-width: 1023px) {
+  /* Mobile specific adjustments */
   .main-content {
     margin-left: 0;
+  }
+}
+
+/* Prevent body scroll when mobile menu is open */
+body.menu-open {
+  overflow: hidden;
+}
+
+/* Enhanced focus styles for accessibility */
+button:focus,
+a:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 640px) {
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  a {
+    min-height: 44px;
   }
 }
 </style>

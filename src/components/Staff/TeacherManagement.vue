@@ -218,9 +218,9 @@
 
       <!-- Class Subjects Content -->
       <div v-else class="p-3 sm:p-6">
-        <div v-if="!selectedClassId" class="text-center py-8 sm:py-12">
+        <div v-if="!selectedTeacherId" class="text-center py-8 sm:py-12">
           <i class="pi pi-info-circle text-3xl sm:text-4xl text-gray-300 mb-4"></i>
-          <p class="text-sm sm:text-base text-gray-500">Please select a class to view assigned subjects</p>
+          <p class="text-sm sm:text-base text-gray-500">Please select a Teacher to view assigned Class</p>
         </div>
 
         <div v-else-if="teacherclass.length === 0" class="text-center py-8 sm:py-12">
@@ -250,7 +250,7 @@
             </div>
             <div class="flex space-x-2 pt-3 border-t border-gray-200">
               <button
-                @click="editClassSubject(classSubject)"
+                @click="editAssignTeacher(classSubject)"
                 class="flex-1 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors duration-200 flex items-center justify-center text-sm"
               >
                 <i class="pi pi-pencil mr-2"></i>
@@ -312,7 +312,7 @@
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex justify-end space-x-2">
                     <button
-                      @click="editClassSubject(teacherClass)"
+                      @click="openEditAssignTeacherModal(teacherClass)"
                       class="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-200 flex items-center text-xs sm:text-sm"
                       title="Edit Assignment"
                     >
@@ -337,7 +337,7 @@
     </div>
 
     <!-- Create/Edit Subject Modal -->
-    <SubjectModal
+    <!-- <SubjectModal
       v-if="showCreateSubjectModal || showEditSubjectModal"
       :show="showCreateSubjectModal || showEditSubjectModal"
       :subject-data="currentSubject"
@@ -345,7 +345,7 @@
       :loading="subjectLoading"
       @close="closeSubjectModal"
       @submit="handleSubjectSubmit"
-    />
+    /> -->
 
     <!-- Assign Subject to Class Modal -->
     <AssignTeacherModal
@@ -359,17 +359,17 @@
     />
 
     <!-- Edit Class Subject Modal -->
-    <EditClassSubjectModal
-      v-if="showEditClassSubjectModal"
-      :show="showEditClassSubjectModal"
-      :class-subject="currentClassSubject"
+    <EditAssignTeacherModal
+      v-if="showEditAssignTeacherModal"
+      :show="showEditAssignTeacherModal"
+      :assign-teacher="currentAssignTeacher"
       :loading="assignmentLoading"
-      @close="closeEditClassSubjectModal"
-      @submit="handleClassSubjectUpdate"
+      @close="closeEditAssogmTeacherModal"
+      @submit="handleAssignTeacherUpdate"
     />
 
     <!-- Delete Confirmation Modals -->
-    <DeleteConfirmation
+    <!-- <DeleteConfirmation
       v-if="showDeleteSubjectModal"
       :show="showDeleteSubjectModal"
       :item="subjectToDelete"
@@ -377,16 +377,16 @@
       item-type="subject"
       @confirm="deleteSubject"
       @cancel="cancelDeleteSubject"
-    />
+    /> -->
 
     <DeleteConfirmation
-      v-if="showDeleteClassSubjectModal"
-      :show="showDeleteClassSubjectModal"
-      :item="classSubjectToDelete"
+      v-if="showDeleteAssignTeacherModal"
+      :show="showDeleteAssignTeacherModal"
+      :item="AssignTeacherToDelete"
       :loading="assignmentLoading"
-      item-type="subject assignment"
-      @confirm="deleteClassSubject"
-      @cancel="cancelDeleteClassSubject"
+      item-type="teacher assignment"
+      @confirm="deleteAssignmenTeacher"
+      @cancel="cancelDeleteAssignTeacher"
     />
     </div>
 </template>
@@ -394,20 +394,21 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import {api,accapi} from '../api/axios';
+import {api,accapi} from '../../api/axios';
 
 import { watch } from 'vue';
 
 // Import components
-import TeacherForm from './Principal/TeacherForm.vue';
-import TeacherCard from './Principal/TeacherCard.vue';
-import TeacherTableRow from './Principal/TeacherTableRow.vue';
-import TeacherDetailsModal from './Principal/TeacherDetailsModal.vue';
-import SearchAndFilters from './Admin/SearchAndFilters.vue';
-import DeleteConfirmation from './Admin/DeleteConfirmation.vue';
+import TeacherForm from '../Principal/TeacherForm.vue';
+import TeacherCard from '../Principal/TeacherCard.vue';
+import TeacherTableRow from '../Principal/TeacherTableRow.vue';
+import TeacherDetailsModal from '../Principal/TeacherDetailsModal.vue';
+import SearchAndFilters from '../Admin/SearchAndFilters.vue';
+import DeleteConfirmation from '../Admin/DeleteConfirmation.vue';
 import { toast } from 'vue3-toastify'
 import { useRoute } from 'vue-router';
 import AssignTeacherModal from './AssignTeacherModal.vue';
+import EditAssignTeacherModal from './EditAssignTeacherModal.vue';
 
 const router = useRouter();
 const subjects = ref([]);
@@ -435,8 +436,17 @@ const loadingSubjects = ref(false);
 
 // modals
 const showAssignTeacherModal = ref(false);
+const showEditAssignTeacherModal = ref(false);
+const showDeleteAssignTeacherModal = ref(false);
+const AssignTeacherToDelete = ref(null);
+
+// Current items for editing
+const currentAssignTeacher = ref(null);
 
 const route = useRoute();
+
+
+
 
 // Tabs
 const tabs = [
@@ -791,8 +801,90 @@ const assignTeacherToClass = async (assignmentData) => {
   }
 };
 
+const updateAssignTeacher = async (assignmentData) => {
+  console.log('UpdateAssignTeacher called with:', assignmentData);
+  assignmentLoading.value = true;
+  try {
+    const response = await accapi.put(`/teacher-assignments/${assignmentData.id}/`, assignmentData);
+
+    // Update teacherclass with response data
+    const index = teacherclass.value.findIndex(ta => ta.id === assignmentData.id);
+    if (index !== -1) {
+      teacherclass.value[index] = {
+        ...response.data,
+        subject_name: response.data.subject_associated?.name,
+        class_name: response.data.class_associated?.name,
+        section_name: response.data.section_associated?.name,
+        academic_session_name: response.data.academic_session?.name
+      };
+    }
+
+    toast.success('Teacher assignment updated successfully');
+    closeEditAssignTeacherModal();
+  } catch (error) {
+    console.error('Error updating teacher assignment:', error);
+    toast.error('Failed to update teacher assignment');
+  } finally {
+    assignmentLoading.value = false;
+  }
+};
+const confirmDeleteClassSubject = (classSubject) => {
+  AssignTeacherToDelete.value = {
+    ...classSubject,
+    name: classSubject.subject_name // 🔑 add name field for modal
+  };
+  showDeleteAssignTeacherModal.value = true;
+};
+const deleteAssignmenTeacher = async () => {
+  if (!AssignTeacherToDelete.value) return;
+
+  assignmentLoading.value = true;
+  try {
+    await accapi.delete(`/teacher-assignments/${AssignTeacherToDelete.value.id}/`);
+    teacherclass.value = teacherclass.value.filter(ta => ta.id !== AssignTeacherToDelete.value.id);
+    toast.success('Teacher assignment deleted successfully');
+    showDeleteAssignTeacherModal.value = false;
+    AssignTeacherToDelete.value = null;
+  } catch (error) {
+    console.error('Error deleting teacher assignment:', error);
+    toast.error('Failed to delete teacher assignment');
+  } finally {
+    assignmentLoading.value = false;
+  }
+};
+const cancelDeleteAssignTeacher = () => {
+  showDeleteAssignTeacherModal.value = false;
+  AssignTeacherToDelete.value = null;
+};
+
+
 const handleTeacherAssignment = (assignmentData) => {
   assignTeacherToClass(assignmentData);
+};
+
+const editAssignTeacher = (classSubject) => {
+  currentAssignTeacher.value = { ...classSubject };
+  showEditAssignTeacherModal.value = true;
+};
+
+const closeEditAssogmTeacherModal = () => {
+  closeEditAssignTeacherModal()
+};
+
+const handleAssignTeacherUpdate = (assignmentData) => {
+  console.log('Parent received update data:', assignmentData);
+  updateAssignTeacher(assignmentData);
+};
+
+const closeEditAssignTeacherModal = () => {
+  showEditAssignTeacherModal.value = false;
+  currentAssignTeacher.value = null;
+};
+
+const openEditAssignTeacherModal = (assignmentData) => {
+  console.log('Opening edit modal with data:', assignmentData);
+  currentAssignTeacher.value = assignmentData;
+  showEditAssignTeacherModal.value = true;
 };
 
 watch(selectedTeacherId, (newVal) => {

@@ -284,12 +284,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import {api,accapi} from '../api/axios';
+import {api,accapi} from '../../api/axios';
 import { toast } from 'vue3-toastify';
 
 // Import components
 import SessionModal from './SessionModal.vue';
-import DeleteConfirmation from './Admin/DeleteConfirmation.vue';
+import DeleteConfirmation from '../Admin/DeleteConfirmation.vue';
 
 // Data
 const sessions = ref([]);
@@ -430,7 +430,7 @@ const createSession = async (sessionData) => {
 const updateSession = async (sessionData) => {
   updating.value = true;
   try {
-    const response = await api.accapi(`/academic-sessions/${sessionData.id}/`, sessionData);
+    const response = await accapi.put(`/academic-sessions/${sessionData.id}/`, sessionData);
     const index = sessions.value.findIndex(s => s.id === sessionData.id);
     if (index !== -1) {
       sessions.value[index] = response.data;

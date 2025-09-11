@@ -372,14 +372,14 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import {api,accapi} from '../api/axios';
+import {api,accapi} from '../../api/axios';
 import { toast } from 'vue3-toastify';
 
 // Import components
 import SubjectModal from './SubjectModal.vue';
 import AssignSubjectModal from './AssignSubjectModal.vue';
 import EditClassSubjectModal from './EditClassSubjectModal.vue';
-import DeleteConfirmation from './Admin/DeleteConfirmation.vue';
+import DeleteConfirmation from '../Admin/DeleteConfirmation.vue';
 
 // Data
 const subjects = ref([]);

@@ -19,12 +19,16 @@ import principalTeachers from '@/components/Principal/Teachers.vue';
 import AddTeacher from '@/components/Principal/AddTeacher.vue';
 import principalStudents from '@/components/Principal/Students.vue';
 import AddStudent from '@/components/Principal/AddStudent.vue';
-import StaffDashboard from '@/components/StaffDashboard.vue';
-import StaffDAshboardHome from '@/components/DashboardHome.vue';
-import ClassSectionManagementVue from '@/components/ClassSectionManagement.vue.vue';
-import SubjectsManagement from '@/components/SubjectsManagement.vue';
-import TeacherManagement from '@/components/TeacherManagement.vue';
-import AcademicSessions from '@/components/AcademicSessions.vue';
+import StaffDashboard from '@/components/Staff/StaffDashboard.vue';
+import StaffDAshboardHome from '@/components/Staff/DashboardHome.vue';
+import ClassSectionManagementVue from '@/components/Staff/ClassSectionManagement.vue.vue';
+import SubjectsManagement from '@/components/Staff/SubjectsManagement.vue';
+import TeacherManagement from '@/components/Staff/TeacherManagement.vue';
+import AcademicSessions from '@/components/Staff/AcademicSessions.vue';
+import staffStudents from '@/components/Staff/Students.vue'
+import TeacherDashboard from '@/components/Teacher/TeacherDashboard.vue';
+import TeacherDashboardHome from '@/components/Teacher/DashboardHome.vue';
+import Subjects from '@/components/Teacher/Subjects.vue';
 
 
 const routes = [
@@ -114,7 +118,7 @@ const routes = [
     {
       path: 'students',
       name: 'PrincipalStudents',
-      component: principalStudents,
+      component: staffStudents,
     },
     {
       path: 'students/add',
@@ -163,16 +167,73 @@ const routes = [
       name: 'staffAcademicSession',
       component: AcademicSessions,
     },
-    // {
-    //   path: 'students/add',
-    //   name: 'AddPrincipalStudent',
-    //   component: AddStudent,
-    // },
+    {
+      path: 'students',
+      name: 'staffStudent',
+      component: staffStudents,
+    },
+    {
+      path: 'students/add',
+      name: 'AddStaffStudent',
+      component: AddStudent,
+    },
     {
       path: '',
       name: 'StaffRedirect',
       redirect: '/staff/dashboard'
     }
+  ]
+},
+  {
+  path: '/teacher',
+  component: TeacherDashboard,
+  meta: { requiresAuth: true, requiresTeacher: true },
+  children: [
+    {
+      path: 'dashboard',
+      name: 'TeacherDashboardHome',
+      component: TeacherDashboardHome,
+    },
+    {
+      path: 'subject',
+      name: 'teacherSubject',
+      component: Subjects,
+    },
+    // {
+    //   path: 'subjects',
+    //   name: 'staffSubject',
+    //   component: SubjectsManagement,
+    // },
+    // {
+    //   path: 'teachers',
+    //   name: 'StaffTeachers',
+    //   component: TeacherManagement,
+    // },
+    // {
+    //   path: 'teachers/add',
+    //   name: 'AddStaffTeacher',
+    //   component: AddTeacher,
+    // },
+    // {
+    //   path: 'academicsession',
+    //   name: 'staffAcademicSession',
+    //   component: AcademicSessions,
+    // },
+    // {
+    //   path: 'students',
+    //   name: 'staffStudent',
+    //   component: staffStudents,
+    // },
+    // {
+    //   path: 'students/add',
+    //   name: 'AddStaffStudent',
+    //   component: AddStudent,
+    // },
+    // {
+    //   path: '',
+    //   name: 'StaffRedirect',
+    //   redirect: '/staff/dashboard'
+    // }
   ]
 },
 
@@ -193,6 +254,9 @@ const routes = [
         }
         if (user && user.roles && user.roles.includes('staff')) {
           return '/staff/dashboard';
+        }
+        if (user && user.roles && user.roles.includes('teacher')) {
+          return '/teacher/dashboard';
         }
       } catch (e) {
         console.error("Failed to parse user data", e);

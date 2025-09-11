@@ -1,4 +1,4 @@
-<!-- src/components/StudentTableRow.vue -->
+<!-- src/components/StudentTableRowWithEnrollment.vue -->
 <template>
   <tr class="hover:bg-gray-50 transition-colors duration-200">
     <td class="px-6 py-4 whitespace-nowrap">
@@ -8,6 +8,16 @@
     </td>
     <td class="px-6 py-4 whitespace-nowrap">
       <div class="text-sm text-gray-500">ST000{{ student.user_id }}</div>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+      <div class="text-sm text-gray-500">
+        {{ getCurrentClass(enrollments) }}
+      </div>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+      <div class="text-sm text-gray-500">
+        {{ getCurrentSection(enrollments) }}
+      </div>
     </td>
     <td class="px-6 py-4 whitespace-nowrap">
       <div class="text-sm text-gray-500">{{ student.guardian_name || 'N/A' }}</div>
@@ -35,14 +45,21 @@
         <button
           @click="$emit('edit', student)"
           class="px-3 py-1 text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200 flex items-center"
-          title="Edit Teacher"
+          title="Edit Student"
         >
           <i class="pi pi-pencil mr-1"></i>
         </button>
         <button
+          @click="$emit('manage-enrollment', student)"
+          class="px-3 py-1 text-purple-600 hover:bg-purple-50 rounded-md transition-colors duration-200 flex items-center"
+          title="Manage Enrollment"
+        >
+          <i class="pi pi-book mr-1"></i>
+        </button>
+        <button
           @click="$emit('delete', student)"
           class="px-3 py-1 text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 flex items-center"
-          title="Delete Teacher"
+          title="Delete Student"
         >
           <i class="pi pi-trash mr-1"></i>
         </button>
@@ -58,10 +75,14 @@ const props = defineProps({
   student: {
     type: Object,
     required: true
+  },
+  enrollments: {
+    type: Array,
+    default: () => []
   }
 });
 
-defineEmits(['view', 'edit', 'delete']);
+defineEmits(['view', 'edit', 'delete', 'manage-enrollment']);
 
 // Format date for display
 const formatDate = (dateString) => {
@@ -73,5 +94,17 @@ const formatDate = (dateString) => {
   } catch (error) {
     return dateString;
   }
+};
+
+// Get current class from enrollments
+const getCurrentClass = (enrollments) => {
+  const activeEnrollment = enrollments.find(e => e.is_active);
+  return activeEnrollment ? activeEnrollment.class_associated?.name : 'Not enrolled';
+};
+
+// Get current section from enrollments
+const getCurrentSection = (enrollments) => {
+  const activeEnrollment = enrollments.find(e => e.is_active);
+  return activeEnrollment ? activeEnrollment.section_associated?.name : '-';
 };
 </script>
