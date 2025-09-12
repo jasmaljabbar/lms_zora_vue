@@ -316,6 +316,13 @@ const isFormValid = computed(() => {
          confirmPassword.value
 })
 
+const getuserrole = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  console.log(user.roles,'user roles');
+  
+  return user?.roles;
+};
+
 const addStudent = async () => {
   submitError.value = ''
   submitSuccess.value = false
@@ -370,11 +377,21 @@ const addStudent = async () => {
     emailError.value = ''
     guardianPhoneError.value = ''
     dobError.value = ''
+    const userrole = getuserrole();
+    if (userrole && userrole.includes('principal')) {
+      router.push({path:'/principal/students',query: { success: 'true' }});
+      return;
+    }else{
+      router.push({
+        path: '/staff/students',
+        query: { success: 'true' }
+      });
+    }
     
-    router.push({
-      path: '/principal/students',
-      query: { success: 'true' }
-    });
+    // router.push({
+    //   path: '/principal/students',
+    //   query: { success: 'true' }
+    // });
 
   } catch (error) {
     console.error('Error adding student:', error)

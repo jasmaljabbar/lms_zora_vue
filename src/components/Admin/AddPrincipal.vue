@@ -127,6 +127,7 @@ const addPrincipal = async () => {
     const response = await api.post('http://127.0.0.1:8001/principal/', payload);
     console.log('Principal added:', response.data);
     submitSuccess.value = true;
+    router.push('/admin/principals');
     // Optionally, clear the form after successful submission
     Object.keys(form.value).forEach(key => (form.value[key] = ''));
     confirmPassword.value = '';

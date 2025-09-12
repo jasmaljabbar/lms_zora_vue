@@ -377,7 +377,20 @@ const fetchStudents = async () => {
   }
 };
 
+const getuserrole = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  console.log(user.roles,'user roles');
+  
+  return user?.roles;
+};
+
+
 const navigateToAddStudent = () => {
+  const userrole = getuserrole();
+  if (userrole && userrole.includes('principal')) {
+    router.push('/principal/students/add');
+    return;
+  }
   router.push('/staff/students/add');
 };
 

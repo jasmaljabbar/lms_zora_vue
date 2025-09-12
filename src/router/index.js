@@ -29,6 +29,8 @@ import staffStudents from '@/components/Staff/Students.vue'
 import TeacherDashboard from '@/components/Teacher/TeacherDashboard.vue';
 import TeacherDashboardHome from '@/components/Teacher/DashboardHome.vue';
 import Subjects from '@/components/Teacher/Subjects.vue';
+import TeacherTimetable from '@/components/Teacher/TeacherTimetable.vue';
+import TimetableManagement from '@/components/Staff/TimetableManagement.vue';
 
 
 const routes = [
@@ -178,6 +180,11 @@ const routes = [
       component: AddStudent,
     },
     {
+      path: 'timetable',
+      name: 'StaffTimetable',
+      component: TimetableManagement,
+    },
+    {
       path: '',
       name: 'StaffRedirect',
       redirect: '/staff/dashboard'
@@ -199,11 +206,11 @@ const routes = [
       name: 'teacherSubject',
       component: Subjects,
     },
-    // {
-    //   path: 'subjects',
-    //   name: 'staffSubject',
-    //   component: SubjectsManagement,
-    // },
+    {
+      path: 'schedule',
+      name: 'teacherSchedule',
+      component: TeacherTimetable,
+    },
     // {
     //   path: 'teachers',
     //   name: 'StaffTeachers',

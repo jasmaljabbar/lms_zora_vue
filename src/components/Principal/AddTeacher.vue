@@ -276,6 +276,12 @@ const isFormValid = computed(() => {
          (form.value.years_of_experience >= 0) &&
          confirmPassword.value
 })
+const getuserrole = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  console.log(user.roles,'user roles');
+  
+  return user?.roles;
+};
 
 const addTeacher = async () => {
   submitError.value = ''
@@ -339,12 +345,17 @@ const addTeacher = async () => {
       position: 'top-right',
       timeout: 3000
     })
-
     // Navigate back to teachers list
-    router.push({
-      path: '/principal/teachers',
-      query: { success: 'true' }
-    });
+    const userrole = getuserrole();
+    if (userrole && userrole.includes('principal')) {
+      router.push({path:'/principal/teachers',query: { success: 'true' }});
+      return;
+    }else{
+      router.push({
+        path: '/staff/teachers',
+        query: { success: 'true' }
+      });
+    }
 
   } catch (error) {
     console.error('Error adding teacher:', error)

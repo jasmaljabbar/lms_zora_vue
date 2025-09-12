@@ -84,7 +84,7 @@
           </li>
           <li>
             <router-link 
-              to="/staff/academicsession"
+              to="/teacher/schedule"
               @click="closeMobileMenuOnNavigate"
               class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
             >

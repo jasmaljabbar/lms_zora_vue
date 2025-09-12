@@ -92,6 +92,16 @@
               <span class="truncate">AcademicSessions</span>
             </router-link>
           </li>
+          <li>
+            <router-link 
+              to="/staff/timetable"
+              @click="closeMobileMenuOnNavigate"
+              class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
+            >
+              <i class="pi pi-stopwatch mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0"></i>
+              <span class="truncate">Schedule</span>
+            </router-link>
+          </li>
         </ul>
       </nav>
 
