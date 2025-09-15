@@ -141,6 +141,8 @@ const saveToken = (token) => {
     router.push('/principal/dashboard');
   } else if (decoded.roles && decoded.roles.includes("staff")) {
     router.push('/staff/dashboard');
+  } else if (decoded.roles && decoded.roles.includes("student")) {
+    router.push('/student/dashboard');
   } else {
     router.push('/dashboard'); // Default redirect if no specific role
   }

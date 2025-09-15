@@ -100,8 +100,7 @@
                     class="w-full px-3 py-2 border rounded-md text-sm">
               <option value="">{{ loadingTeachers ? 'Loading teachers...' : 'Select Teacher' }}</option>
               <option v-for="teacher in teachers" :key="teacher.teacher_id" :value="teacher.teacher_id">
-                Teacher ID: {{ teacher.teacher_id }} 
-                <!-- In a real app, you'd fetch teacher names too -->
+                {{ teacherProfiles[teacher.teacher_id] || `Teacher ID: ${teacher.teacher_id}` }}
               </option>
             </select>
             <p v-if="teachers.length === 0 && !loadingTeachers && form.class_id && form.section_id && selectedSubjectId" class="text-sm text-red-500 mt-1">
@@ -137,7 +136,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, defineProps, defineEmits } from 'vue';
-import { accapi } from '@/api/axios';
+import { accapi,api } from '@/api/axios';
 import { toast } from 'vue3-toastify';
 
 const props = defineProps({
@@ -163,6 +162,8 @@ const sections = ref([]);
 const subjects = ref([]);
 const teachers = ref([]);
 const selectedSubjectId = ref(null);
+const teacherProfiles = ref({});
+
 
 const form = reactive({
   id: null,
@@ -243,6 +244,17 @@ const fetchSectionsAndSubjects = async () => {
     loadingSubjects.value = false;
   }
 };
+// Fetch teacher profile by ID
+const fetchTeacherProfile = async (teacherId) => {
+  if (!teacherId || teacherProfiles.value[teacherId]) return; // already cached
+  try {
+    const { data } = await api.get(`/teacher_profiles/${teacherId}/`);
+    teacherProfiles.value[teacherId] = `${data.first_name} ${data.last_name}`;
+  } catch (error) {
+    console.error('Error fetching teacher profile:', error);
+    teacherProfiles.value[teacherId] = 'N/A';
+  }
+};
 
 // Fetch class_subject ID and teachers for the selected class, section, and subject
 const fetchClassSubjectAndTeachers = async () => {
@@ -273,6 +285,13 @@ const fetchClassSubjectAndTeachers = async () => {
       });
       
       teachers.value = teachersResponse.data;
+
+      // fetch names for each teacher in parallel
+      for (const t of teachers.value) {
+        if (t.teacher_id) {
+          fetchTeacherProfile(t.teacher_id);
+        }
+      }
     }
   } catch (error) {
     console.error('Error fetching class subject or teachers:', error);

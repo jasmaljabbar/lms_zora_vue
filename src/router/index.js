@@ -31,6 +31,10 @@ import TeacherDashboardHome from '@/components/Teacher/DashboardHome.vue';
 import Subjects from '@/components/Teacher/Subjects.vue';
 import TeacherTimetable from '@/components/Teacher/TeacherTimetable.vue';
 import TimetableManagement from '@/components/Staff/TimetableManagement.vue';
+import StudentDashboard from '@/components/Student/StudentDashboard.vue';
+import CommonNavbar from '@/components/Student/CommonNavbar.vue';
+import SubjectLessons from '@/components/Student/SubjectLessons.vue';
+import StudentTimetable from '@/components/Student/StudentTimetable.vue';
 
 
 const routes = [
@@ -211,36 +215,39 @@ const routes = [
       name: 'teacherSchedule',
       component: TeacherTimetable,
     },
-    // {
-    //   path: 'teachers',
-    //   name: 'StaffTeachers',
-    //   component: TeacherManagement,
-    // },
-    // {
-    //   path: 'teachers/add',
-    //   name: 'AddStaffTeacher',
-    //   component: AddTeacher,
-    // },
-    // {
-    //   path: 'academicsession',
-    //   name: 'staffAcademicSession',
-    //   component: AcademicSessions,
-    // },
-    // {
-    //   path: 'students',
-    //   name: 'staffStudent',
-    //   component: staffStudents,
-    // },
-    // {
-    //   path: 'students/add',
-    //   name: 'AddStaffStudent',
-    //   component: AddStudent,
-    // },
-    // {
-    //   path: '',
-    //   name: 'StaffRedirect',
-    //   redirect: '/staff/dashboard'
-    // }
+    {
+      path: '',
+      name: 'TeacherRedirect',
+      redirect: '/teacher/dashboard'
+    }
+  ]
+},
+  {
+  path: '/student',
+  component: CommonNavbar,
+  meta: { requiresAuth: true, requiresStudent: true },
+  children: [
+    {
+      path: 'dashboard',
+      name: 'StudnetDashboardHome',
+      component: StudentDashboard,
+    },
+    {
+      path: '/subject/:id/lessons',
+      name: 'SubjectLessons',
+      component: SubjectLessons,
+      props: true
+    },
+    {
+      path: 'schedule',
+      name: 'studentSchedule',
+      component: StudentTimetable,
+    },
+    {
+      path: '',
+      name: 'StudentRedirect',
+      redirect: '/student/dashboard'
+    }
   ]
 },
 

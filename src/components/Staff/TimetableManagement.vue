@@ -1,4 +1,3 @@
-<!-- src/components/TimetableManagement.vue -->
 <template>
   <div class="p-4 sm:p-6">
     <!-- Header Section -->
@@ -28,7 +27,7 @@
     <!-- Timetable Content -->
     <div v-else class="bg-white rounded-lg shadow-md overflow-hidden">
       <!-- Filters -->
-      <div class="p-4 border-b border-gray-200">
+      <!-- <div class="p-4 border-b border-gray-200">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Academic Session</label>
@@ -61,7 +60,7 @@
             </select>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Timetable Grid -->
       <div class="overflow-x-auto">
@@ -91,12 +90,13 @@
               <td v-for="day in daysOfWeek" :key="day" 
                   class="px-4 py-3 text-center">
                 <TimetableSlotManage 
-                  :schedule="getScheduleForPeriodAndDay(period.id, day)" 
+                  :schedules="getSchedulesForPeriodAndDay(period.id, day)" 
                   :period="period"
                   :day="day"
                   :subjects-data="subjectsData"
                   @edit="editSchedule"
                   @delete="confirmDeleteSchedule"
+                  @add-to-slot="addScheduleToSlot"
                 />
               </td>
             </tr>
@@ -276,7 +276,7 @@ const fetchSubjectsForTimetable = async (timetable) => {
 const formatTime = (timeString) => {
   if (!timeString) return '';
   // Assuming timeString is like "HH:MM:SS.sssZ"
-  const date = new Date(timeString);
+  const date = new Date(`2000-01-01T${timeString}`); // Use a dummy date to parse time correctly
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 };
 
@@ -308,9 +308,9 @@ const sortedPeriods = computed(() => {
   });
 });
 
-// Get schedule for specific period and day
-const getScheduleForPeriodAndDay = (periodId, day) => {
-  return timetableData.value.find(item => 
+// MODIFIED: Get all schedules for a specific period and day
+const getSchedulesForPeriodAndDay = (periodId, day) => {
+  return timetableData.value.filter(item => 
     item.period?.id === periodId && 
     item.day === day
   );
@@ -318,19 +318,24 @@ const getScheduleForPeriodAndDay = (periodId, day) => {
 
 // Edit schedule
 const editSchedule = (schedule) => {
-  // If schedule is provided with only period_id and day (for creating new slot)
-  // or a full schedule object (for editing existing)
-  editingSchedule.value = schedule.id ? { ...schedule } : { 
-    ...schedule, // { period_id, day }
+  editingSchedule.value = { ...schedule };
+  showCreateForm.value = false; // Ensure create form is hidden if editing
+};
+
+// NEW: Handle adding a new schedule to an existing slot (period/day)
+const addScheduleToSlot = (period, day) => {
+  editingSchedule.value = { 
+    period_id: period.id,
+    day: day,
     academic_session_id: filters.value.academic_session_id || academicSessions.value.find(s => s.is_current)?.id,
-    class_id: filters.value.class_id,
+    class_id: filters.value.class_id, // Pre-fill from filter if available
     section_id: null,
-    subject_id: null, // to be selected in form
-    classSubject_id: null, // to be derived
+    subject_id: null,
+    classSubject_id: null,
     teacher_id: null,
     room_number: ''
   };
-  showCreateForm.value = false; // Ensure create form is hidden if editing
+  showCreateForm.value = false; // Just to make sure, it will be overridden by `!!editingSchedule`
 };
 
 // Confirm delete schedule

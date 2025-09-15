@@ -1,92 +1,93 @@
-<!-- src/components/TimetableSlotManage.vue -->
 <template>
-  <div v-if="schedule" 
-       class="p-2 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors cursor-pointer group relative"
-       @click="$emit('edit', schedule)">
-    <div class="text-sm font-medium text-blue-800">
-      {{ schedule.class_associated?.name }}{{ schedule.section_associated?.name ? ' - ' + schedule.section_associated.name : '' }}
-    </div>
-    <div class="text-xs text-blue-600 mt-1">
-      {{ getSubjectName(schedule) }}
-    </div>
-    <div class="text-xs text-gray-500 mt-1">
-      Room: {{ schedule.room_number || 'N/A' }}
-    </div>
-    <div class="text-xs text-gray-500 mt-1">
-      Teacher: {{ getTeacherName(schedule) }}
-    </div>
+  <div class="relative flex flex-col items-center justify-center p-2 min-h-[80px] border border-dashed border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
     
-    <!-- Action buttons -->
-    <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
-      <button @click.stop="$emit('edit', schedule)" 
-              class="p-1 text-blue-600 hover:text-blue-800 bg-white rounded"
-              title="Edit">
-        <i class="pi pi-pencil text-xs"></i>
-      </button>
-      <button @click.stop="$emit('delete', schedule)" 
-              class="p-1 text-red-600 hover:text-red-800 bg-white rounded"
-              title="Delete">
-        <i class="pi pi-trash text-xs"></i>
+    <div v-if="schedules.length > 0" class="w-full">
+      <div v-for="schedule in schedules" :key="schedule.id" 
+           class="mb-1 p-2 bg-white rounded-md shadow-sm text-left text-xs border border-gray-100 relative group">
+        <div class="font-semibold text-gray-800">
+          {{ subjectsData[schedule.class_subject?.subject_id]?.name || 'N/A' }} 
+          <span class="text-blue-600">({{ schedule.class_associated?.name }} - {{ schedule.section_associated?.name }})</span>
+        </div>
+        <div class="text-gray-600 mt-1">
+          Teacher: {{ teacherProfiles[schedule.teacher_id] || 'Loading...' }} 
+        </div>
+        <div class="text-gray-500">
+          Room: {{ schedule.room_number || 'N/A' }}
+        </div>
+        
+        <!-- Actions for each individual schedule -->
+        <div class="absolute top-0 right-0 flex space-x-1 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button @click.stop="$emit('edit', schedule)" 
+                  class="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-100 focus:outline-none text-xs">
+            <i class="pi pi-pencil"></i>
+          </button>
+          <button @click.stop="$emit('delete', schedule)" 
+                  class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 focus:outline-none text-xs">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Button to add another schedule to this slot -->
+      <button @click="$emit('add-to-slot', period, day)" 
+              class="mt-2 w-full text-blue-600 hover:text-blue-800 text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors duration-200">
+        <i class="pi pi-plus mr-1"></i> Add Another
       </button>
     </div>
-  </div>
-  <div v-else-if="period.is_break" class="p-2 text-center bg-orange-50 border border-orange-200 rounded-md">
-    <div class="text-xs font-medium text-orange-700">Break</div>
-    <div class="text-xs text-orange-600">
-      {{ formatTime(period.start_time) }} - {{ formatTime(period.end_time) }}
+
+    <div v-else class="text-center text-gray-400">
+      <button @click="$emit('add-to-slot', period, day)" 
+              class="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 text-xs focus:outline-none">
+        <i class="pi pi-plus mr-1"></i> Add Schedule
+      </button>
     </div>
-  </div>
-  <div v-else class="p-2 text-center hover:bg-gray-50 cursor-pointer flex items-center justify-center h-full min-h-[60px]" 
-       @click="$emit('edit', { period_id: period.id, day: day })">
-    <span class="text-xs text-gray-400">+ Add Class</span>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { api } from '@/api/axios';
+import { defineProps, defineEmits, ref, onMounted } from 'vue';
 
 const props = defineProps({
-  schedule: {
-    type: Object,
-    default: null
+  schedules: {
+    type: Array,
+    default: () => []
   },
-  period: {
-    type: Object,
-    required: true
-  },
-  day: {
-    type: String,
-    required: true
-  },
-  subjectsData: {
-    type: Object,
-    default: () => ({})
-  }
+  period: Object,
+  day: String,
+  subjectsData: Object,
 });
 
-const emit = defineEmits(['edit', 'delete']);
+const emit = defineEmits(['edit', 'delete', 'add-to-slot']);
 
-// Extract subject name
-const getSubjectName = (schedule) => {
-  if (!schedule.class_subject?.subject_id) return 'No Subject';
-  
-  const subjectId = schedule.class_subject.subject_id;
-  const subject = props.subjectsData[subjectId];
-  
-  return subject?.name || `Subject ${subjectId}`;
+// Store teacher profiles in a dictionary { teacher_id: "Full Name" }
+const teacherProfiles = ref({});
+
+// Fetch teacher profile by ID
+const fetchTeacherProfile = async (teacherId) => {
+  if (!teacherId || teacherProfiles.value[teacherId]) return; // already cached
+  try {
+    const { data } = await api.get(`/teacher_profiles/${teacherId}/`);
+    teacherProfiles.value[teacherId] = `${data.first_name} ${data.last_name}`;
+  } catch (error) {
+    console.error('Error fetching teacher profile:', error);
+    teacherProfiles.value[teacherId] = 'N/A';
+  }
 };
 
-// Extract teacher name (you might need to fetch this separately)
-const getTeacherName = (schedule) => {
-  // This currently displays the teacher ID. For actual names, you'd need
-  // to fetch teacher data and map the ID to a name.
-  return schedule.teacher_id ? `Teacher ID: ${schedule.teacher_id}` : 'Not assigned';
-};
-
-// Format time for display
-const formatTime = (timeString) => {
-  if (!timeString) return '';
-  const date = new Date(timeString);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-};
+// Load teachers when schedules change
+onMounted(() => {
+  props.schedules.forEach(sch => {
+    if (sch.teacher_id) {
+      fetchTeacherProfile(sch.teacher_id);
+    }
+  });
+});
 </script>
+
+
+<style scoped>
+/* Add any specific styles for the slot if needed */
+.group:hover .opacity-0 {
+  opacity: 1;
+}
+</style>
