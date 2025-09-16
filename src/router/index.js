@@ -35,6 +35,11 @@ import StudentDashboard from '@/components/Student/StudentDashboard.vue';
 import CommonNavbar from '@/components/Student/CommonNavbar.vue';
 import SubjectLessons from '@/components/Student/SubjectLessons.vue';
 import StudentTimetable from '@/components/Student/StudentTimetable.vue';
+import ProfileManager from '@/components/Admin/ProfileManager.vue';
+import AdminProfile from '@/components/Principal/AdminProfile.vue';
+import StaffProfile from '@/components/Staff/StaffProfile.vue';
+import TeacherProfile from '@/components/Teacher/TeacherProfile.vue';
+import StudentProfile from '@/components/Student/StudentProfile.vue';
 
 
 const routes = [
@@ -85,6 +90,11 @@ const routes = [
         component: Students,
       },
       {
+        path: 'profile',
+        name: 'AdminProfile',
+        component: ProfileManager,
+      },
+      {
         path: '',
         name: 'AdminRedirect',
         redirect: '/admin/dashboard'
@@ -131,6 +141,11 @@ const routes = [
       name: 'AddPrincipalStudent',
       component: AddStudent,
     },
+    {
+        path: 'profile',
+        name: 'PrincipalProfile',
+        component: AdminProfile,
+      },
     {
       path: '',
       name: 'PrincipalRedirect',
@@ -189,6 +204,11 @@ const routes = [
       component: TimetableManagement,
     },
     {
+        path: 'profile',
+        name: 'StaffProfile',
+        component: StaffProfile,
+      },
+    {
       path: '',
       name: 'StaffRedirect',
       redirect: '/staff/dashboard'
@@ -215,6 +235,11 @@ const routes = [
       name: 'teacherSchedule',
       component: TeacherTimetable,
     },
+    {
+        path: 'profile',
+        name: 'TeacherProfile',
+        component: TeacherProfile,
+      },
     {
       path: '',
       name: 'TeacherRedirect',
@@ -243,6 +268,11 @@ const routes = [
       name: 'studentSchedule',
       component: StudentTimetable,
     },
+    {
+        path: 'profile',
+        name: 'StudentProfile',
+        component: StudentProfile,
+      },
     {
       path: '',
       name: 'StudentRedirect',

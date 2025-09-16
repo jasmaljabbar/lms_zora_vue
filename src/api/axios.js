@@ -11,7 +11,11 @@ const accapi = axios.create({
   baseURL: 'http://127.0.0.1:8002/', // Account API
 });
 
-// Request interceptor for both APIs
+const coreapi = axios.create({
+  baseURL: 'http://127.0.0.1:8000/', // Core API
+});
+
+// Request interceptor for all APIs
 const setupRequestInterceptor = (instance) => {
   instance.interceptors.request.use(
     (config) => {
@@ -27,12 +31,10 @@ const setupRequestInterceptor = (instance) => {
   );
 };
 
-// Response interceptor for both APIs
+// Response interceptor for all APIs
 const setupResponseInterceptor = (instance) => {
   instance.interceptors.response.use(
-    (response) => {
-      return response;
-    },
+    (response) => response,
     (error) => {
       if (error.response && error.response.status === 401) {
         console.warn("Token expired or unauthorized access. Redirecting to login.");
@@ -45,12 +47,12 @@ const setupResponseInterceptor = (instance) => {
   );
 };
 
-// Apply interceptors to both API instances
-setupRequestInterceptor(api);
-setupResponseInterceptor(api);
-setupRequestInterceptor(accapi);
-setupResponseInterceptor(accapi);
+// Apply interceptors
+[api, accapi, coreapi].forEach((instance) => {
+  setupRequestInterceptor(instance);
+  setupResponseInterceptor(instance);
+});
 
-// Export both API instances
-export { api, accapi };
+// Export all instances
+export { api, accapi, coreapi };
 export default api; // Default export for backward compatibility

@@ -56,6 +56,15 @@
           <span>Students</span>
         </router-link>
       </li>
+      <li>
+        <router-link 
+          to="/principal/profile"
+          class="flex items-center p-2 sm:p-3 text-sm sm:text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
+        >
+          <i class="pi pi-user mr-2 sm:mr-3 text-base sm:text-lg"></i>
+          <span>Profile</span>
+        </router-link>
+      </li>
     </ul>
   </nav>
 
@@ -93,11 +102,28 @@
           
           <!-- User Avatar -->
           <div class="relative">
-            <img 
-              src="https://via.placeholder.com/40" 
-              alt="User Avatar" 
-              class="w-8 h-8 sm:w-10 sm:h-10 rounded-full cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all duration-200"
-            >
+            <button class="focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-full">
+              <!-- Show loading indicator while avatar is loading -->
+              <div v-if="loading" class="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-full animate-pulse flex items-center justify-center">
+                <i class="pi pi-spinner pi-spin text-gray-400"></i>
+              </div>
+              <!-- Show avatar when loaded -->
+              <img 
+                v-else
+                :src="getAvatarUrl()"
+                :alt="`${profile.name || 'User'} Avatar`" 
+                class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all duration-200"
+                @error="handleImageError"
+                @load="handleImageLoad"
+              >
+              <!-- Fallback user icon -->
+              <div 
+                v-if="imageError" 
+                class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all duration-200"
+              >
+                <i class="pi pi-user text-blue-600 text-sm sm:text-base"></i>
+              </div>
+            </button>
           </div>
         </div>
       </header>
@@ -113,9 +139,54 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { api } from '@/api/axios';
 
 const router = useRouter();
 const isMobileMenuOpen = ref(false);
+const profile = ref({});
+const loading = ref(false);
+const imageError = ref(false);
+
+const fetchUser = async () => {
+  loading.value = true;
+  imageError.value = false;
+  try {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (!userData || !userData.id) {
+      console.error('No user data found in localStorage');
+      return;
+    }
+    
+    const response = await api.get(`/principal_profiles/${userData.id}`);
+    profile.value = response.data || {};
+    console.log('Profile data:', profile.value); // Debug log
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    // Set default profile data on error
+    profile.value = {};
+  } finally {
+    loading.value = false;
+  }
+};
+
+const getAvatarUrl = () => {
+  // Return the avatar URL if it exists, otherwise return a placeholder
+  if (profile.value.avatar_url) {
+    return profile.value.avatar_url;
+  }
+  // You can use a service like UI Avatars to generate avatars based on name
+  const name = profile.value.name || profile.value.email || 'User';
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=ffffff&size=150&rounded=true`;
+};
+
+const handleImageError = () => {
+  console.error('Avatar image failed to load:', getAvatarUrl());
+  imageError.value = true;
+};
+
+const handleImageLoad = () => {
+  imageError.value = false;
+};
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
@@ -146,6 +217,7 @@ const handleResize = () => {
 };
 
 onMounted(() => {
+  fetchUser();
   document.addEventListener('keydown', handleEscape);
   window.addEventListener('resize', handleResize);
 });
@@ -169,5 +241,19 @@ onUnmounted(() => {
   .main-content {
     margin-left: 0;
   }
+}
+
+/* Smooth loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 </style>
