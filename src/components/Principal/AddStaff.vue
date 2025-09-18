@@ -35,14 +35,46 @@
         
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-          <input type="password" id="password" v-model="form.password" required
-                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          <div class="relative mt-1">
+            <input 
+              :type="showPassword ? 'text' : 'password'" 
+              id="password" 
+              v-model="form.password" 
+              placeholder="Password"
+              required
+              class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+            <button
+              v-if="form.password"
+              type="button"
+              class="absolute inset-y-0 right-0 flex items-center pr-3"
+              @click="showPassword = !showPassword"
+            >
+              <i :class="showPassword ? 'pi pi-eye-slash text-gray-400 hover:text-gray-600' : 'pi pi-eye text-gray-400 hover:text-gray-600'"></i>
+            </button>
+          </div>
         </div>
         
         <div>
           <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-          <input type="password" id="confirmPassword" v-model="confirmPassword" required
-                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          <div class="relative mt-1">
+            <input 
+              :type="showConfirmPassword ? 'text' : 'password'" 
+              id="confirmPassword" 
+              v-model="confirmPassword" 
+              placeholder="Confirm Password"
+              required
+              class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+            <button
+              v-if="confirmPassword"
+              type="button"
+              class="absolute inset-y-0 right-0 flex items-center pr-3"
+              @click="showConfirmPassword = !showConfirmPassword"
+            >
+              <i :class="showConfirmPassword ? 'pi pi-eye-slash text-gray-400 hover:text-gray-600' : 'pi pi-eye text-gray-400 hover:text-gray-600'"></i>
+            </button>
+          </div>
           <p v-if="passwordMismatch" class="text-red-500 text-xs mt-1">Passwords do not match.</p>
         </div>
         
@@ -126,6 +158,10 @@ import api from '../../api/axios'
 import { toast } from 'vue3-toastify'
 
 const router = useRouter()
+
+// Password visibility toggles
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 
 const form = ref({
   username: '',
@@ -278,6 +314,10 @@ const addStaff = async () => {
     usernameError.value = ''
     emailError.value = ''
     phoneError.value = ''
+    
+    // Reset password visibility toggles
+    showPassword.value = false
+    showConfirmPassword.value = false
     
     router.push({
       path: '/principal/staff',

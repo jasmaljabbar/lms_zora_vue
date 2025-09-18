@@ -153,29 +153,15 @@ const logout = () => {
 };
 
 const goProfile = () => {
-  closeDropdown();
-  // Adjust route based on user role
-  const userData = JSON.parse(localStorage.getItem('user'));
-  const route = userData.role === 'student' 
-    ? "/student/profile" 
-    : "/teacher/profile";
-  router.push(route);
+  router.push("/student/profile");
 };
 
 const goSchedule = () => {
-  const userData = JSON.parse(localStorage.getItem('user'));
-  const route = userData.role === 'student' 
-    ? "/student/schedule" 
-    : "/teacher/schedule";
-  router.push(route);
+  router.push("/student/schedule");
 };
 
 const goHome = () => {
-  const userData = JSON.parse(localStorage.getItem('user'));
-  const route = userData.role === 'student' 
-    ? "/student/dashboard" 
-    : "/teacher/dashboard";
-  router.push(route);
+  router.push("/student/dashboard");
 };
 
 // Close dropdown when clicking outside

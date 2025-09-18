@@ -1,6 +1,6 @@
 // src/api/axios.js
 import axios from 'axios';
-import router from '../router'; // Import the router instance
+import router from '../router';
 
 // Create API instances
 const api = axios.create({
@@ -15,7 +15,7 @@ const coreapi = axios.create({
   baseURL: 'http://127.0.0.1:8000/', // Core API
 });
 
-// Request interceptor for all APIs
+// Request interceptor
 const setupRequestInterceptor = (instance) => {
   instance.interceptors.request.use(
     (config) => {
@@ -25,27 +25,73 @@ const setupRequestInterceptor = (instance) => {
       }
       return config;
     },
-    (error) => {
+    (error) => Promise.reject(error)
+  );
+};
+
+// Response interceptor with refresh token
+const setupResponseInterceptor = (instance) => {
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+
+      if (error.response && error.response.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (refreshToken) {
+          try {
+            // ✅ FIXED refresh call
+            const res = await coreapi.post("/refresh", {
+              refresh_token: refreshToken,
+            });
+
+            const newAccessToken = res.data.access_token;
+            localStorage.setItem('access_token', newAccessToken);
+
+            // Update original request with new token
+            originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+            return instance(originalRequest);
+          } catch (refreshError) {
+            console.error('Refresh token failed', refreshError);
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user');
+            router.push('/');
+          }
+        } else {
+          router.push('/');
+        }
+      }
+
       return Promise.reject(error);
     }
   );
 };
 
-// Response interceptor for all APIs
-const setupResponseInterceptor = (instance) => {
-  instance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response && error.response.status === 401) {
-        console.warn("Token expired or unauthorized access. Redirecting to login.");
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user');
-        router.push('/');
-      }
-      return Promise.reject(error);
-    }
-  );
-};
+
+export async function refreshAccessToken() {
+  const refreshToken = localStorage.getItem('refresh_token');
+  if (!refreshToken) return null;
+
+  try {
+    // ✅ FIXED refresh call
+    const res = await coreapi.post("/refresh", {
+      refresh_token: refreshToken,
+    });
+
+    const newAccessToken = res.data.access_token;
+    localStorage.setItem('access_token', newAccessToken);
+    return newAccessToken;
+  } catch (err) {
+    console.error("Refresh token expired or invalid", err);
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    return null;
+  }
+}
 
 // Apply interceptors
 [api, accapi, coreapi].forEach((instance) => {
@@ -53,6 +99,6 @@ const setupResponseInterceptor = (instance) => {
   setupResponseInterceptor(instance);
 });
 
-// Export all instances
+// Export
 export { api, accapi, coreapi };
-export default api; // Default export for backward compatibility
+export default api;

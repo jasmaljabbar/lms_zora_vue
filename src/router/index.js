@@ -40,6 +40,7 @@ import AdminProfile from '@/components/Principal/AdminProfile.vue';
 import StaffProfile from '@/components/Staff/StaffProfile.vue';
 import TeacherProfile from '@/components/Teacher/TeacherProfile.vue';
 import StudentProfile from '@/components/Student/StudentProfile.vue';
+import {coreapi} from '@/api/axios';
 
 
 const routes = [
@@ -320,7 +321,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiresGuest = to.matched.some(record => record.meta.requiresGuest);
-  
+
   const token = localStorage.getItem('access_token');
   let user = null;
 
@@ -342,21 +343,22 @@ router.beforeEach((to, from, next) => {
 
   // Check for authentication
   if (requiresAuth && !token) {
-    return next('/');
+    if (to.path !== '/') {   // ✅ Prevents infinite loop
+      return next('/');
+    }
   }
 
-  // Check for specific role requirements
+  // Role-based access check
   if (requiresAuth && token && user) {
-    // Check if user can access this route based on their role
     if (!RoleUtils.canAccessRoute(user, to.meta)) {
       toast.error('Access Denied: You do not have permission to view this page.')
       return next(RoleUtils.getDashboardRoute(user));
     }
   }
 
-  // Allow navigation
   next();
 });
+
 
 // Helper function to redirect users to their appropriate dashboard
 function redirectToAppropriateDashboard(user) {
@@ -373,5 +375,25 @@ function redirectToAppropriateDashboard(user) {
   }
   return '/';
 }
+
+
+async function validateToken() {
+  try {
+    const res = await coreapi.get("/token/verify");
+    return res.data; // valid user
+  } catch (err) {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    return null;
+  }
+}
+
+const user = await validateToken();
+if (!user) {
+  router.push('/');
+}
+
+
+
 
 export default router;

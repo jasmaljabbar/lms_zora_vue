@@ -17,8 +17,23 @@
         </div>
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-          <input type="password" id="password" v-model="form.password" required
-                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          <div class="relative mt-1">
+            <input
+             :type="showPassword ? 'text' : 'password'" 
+             id="password" 
+             v-model="form.password" 
+             placeholder="Password"
+             required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            <button
+              v-if="form.password"
+              type="button"
+              class="absolute inset-y-0 right-0 flex items-center pr-3"
+              @click="showPassword = !showPassword"
+            >
+              <i :class="showPassword ? 'pi pi-eye-slash text-gray-400 hover:text-gray-600' : 'pi pi-eye text-gray-400 hover:text-gray-600'"></i>
+            </button>
+          </div>
         </div>
         <div>
           <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
@@ -79,8 +94,9 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../../api/axios'; // Import your configured axios instance
+import api from '../../api/axios';
 
+const showPassword = ref(false);
 const router = useRouter();
 
 const form = ref({
@@ -111,29 +127,28 @@ const addPrincipal = async () => {
   }
 
   try {
-    // The API expects a 'string' for school_name, not an ID or object, based on your provided data structure
     const payload = {
       username: form.value.username,
       email: form.value.email,
       password: form.value.password,
       first_name: form.value.first_name,
       last_name: form.value.last_name,
-      mobile_number: form.value.mobile_number || null, // API expects null if not provided
+      mobile_number: form.value.mobile_number || null,
       city: form.value.city || null,
       office_number: form.value.office_number || null,
-      school_name: form.value.school_name || null // Ensure this matches your backend expectation (string name or ID)
+      school_name: form.value.school_name || null
     };
 
     const response = await api.post('http://127.0.0.1:8001/principal/', payload);
     console.log('Principal added:', response.data);
     submitSuccess.value = true;
-    router.push('/admin/principals');
-    // Optionally, clear the form after successful submission
+    
+    // Clear the form after successful submission
     Object.keys(form.value).forEach(key => (form.value[key] = ''));
     confirmPassword.value = '';
 
-    // Optionally, navigate back to the dashboard or principals list
-    // router.push('/admin/principals');
+    // Navigate back to the principals list
+    router.push('/admin/principals');
 
   } catch (error) {
     console.error('Error adding principal:', error);

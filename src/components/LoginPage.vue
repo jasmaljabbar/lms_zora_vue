@@ -43,13 +43,21 @@
                 <i class="pi pi-lock text-gray-400"></i>
               </span>
               <input
-                type="password"
-                id="password"
-                v-model="password"
-                placeholder="Password"
-                class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base md:text-lg"
-                required
-              />
+                  :type="showPassword ? 'text' : 'password'"
+                  id="password"
+                  v-model="password"
+                  placeholder="Password"
+                  class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md 
+                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                        text-base md:text-lg"
+                  required
+                />
+                <span 
+                  class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
+                  @click="showPassword = !showPassword"
+                >
+                <i :class="showPassword ? 'pi pi-eye-slash text-gray-400' : 'pi pi-eye text-gray-400'"></i>
+                </span>
             </div>
           </div>
 
@@ -117,6 +125,8 @@ import zoraLogo from '@/assets/images/loginimg.png'
 const username = ref('');
 const password = ref('');
 const errorMessage = ref('');
+const showPassword = ref(false);
+
 
 // Get router instance
 const router = useRouter();
@@ -125,9 +135,10 @@ const router = useRouter();
 let googleAuth = null;
 let msalInstance = null;
 
-const saveToken = (token) => {
+const saveToken = (token,refresh_token) => {
   // Save raw token
   localStorage.setItem("access_token", token);
+  localStorage.setItem("refresh_token",refresh_token)
 
   // Decode payload
   const decoded = jwtDecode(token);
@@ -193,6 +204,8 @@ const handleGoogleSignIn = async (response) => {
     });
 
     const accessToken = result.data.access_token;
+    console.log(result);
+    
     saveToken(accessToken);
     
     
@@ -239,11 +252,12 @@ const handleLogin = async () => {
     });
 
     const token = response.data.access_token;
-    saveToken(token);
+    const refresh_token = response.data.refresh_token;
+    saveToken(token,refresh_token);
     // localStorage.setItem('access_token', token);
 
     // alert('Login successful! Token stored.');
-    console.log('Login successful, token:', token);
+    console.log('Login successful, token:', response.data);
 
     username.value = '';
     password.value = '';
